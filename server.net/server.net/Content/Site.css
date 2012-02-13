@@ -117,18 +117,24 @@ footer {
 ----------------------------------------------------------*/
 .site-title {
     color: #c8c8c8;
+    display: inline-block;
     font-family: Rockwell, Consolas, "Courier New", Courier, monospace;
-    font-size: 2.3em;
-    margin: 20px 0;
+    margin: 0px 0;
 }
 
 .site-title a, .site-title a:hover, .site-title a:active  {
-    background: none;
     color: #c8c8c8;
     outline: none;
     text-decoration: none;
 }
 
+a.site-logo {
+    background: url("../images/cloud-file-storage.png") no-repeat;
+    display: inline-block;
+    width: 139px;
+    height: 139px;
+    text-indent: -9999px; /* hides the link text */
+}
 
 /* login  
 ----------------------------------------------------------*/

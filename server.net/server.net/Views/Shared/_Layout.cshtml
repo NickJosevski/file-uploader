@@ -10,12 +10,17 @@
         <script src="@Url.Content("~/Scripts/modernizr-2.0.6-development-only.js")" type="text/javascript"></script>
         <script src="@Url.Content("~/Scripts/AjaxLogin.js")" type="text/javascript"></script>
         <meta name="viewport" content="width=device-width">
+        
+        <!-- NOTE these files are ALWAYS sourced from the client folder outside of the project, 
+            just to simplify the structure of this project, they always get copied in-->
+        <link rel="stylesheet" href="@Url.Content("~/Content/fileuploader.css")" type="text/css" media="screen">
     </head>
     <body>
         <header>
             <div class="content-wrapper">
-                <div class="float-left">
-                    <p class="site-title">@Html.ActionLink("your logo here.", "Index", "Home")</p>
+                <div class="float-left site-title">
+                    @Html.ActionLink("file-upload", "Index", "Home", null, new { @class="site-logo" }) 
+                    @RenderSection("title", false)
                 </div>
                 <div class="float-right">
                     <section id="login">

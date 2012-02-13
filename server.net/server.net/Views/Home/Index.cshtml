@@ -2,11 +2,16 @@
     ViewBag.Title = "file-uploader";
 }
 
+@section title { 
+<section class="site-title">
+    <h1>@ViewBag.Title</h1>
+</section>
+}
+
 @section featured {
 <section class="featured">
     <div class="content-wrapper">
         <hgroup class="title">
-            <h1>@ViewBag.Title.</h1>
             <h2>@ViewBag.Message</h2>
         </hgroup>
         <p>
@@ -14,6 +19,7 @@
         </p>
         <p>The .NET Fork here - <a href="https://github.com/NickJosevski/file-uploader">https://github.com/NickJosevski/file-uploader</a></p>
         <p>The original fom <strong>Valums</strong> here - <a href="https://github.com/valums/file-uploader">https://github.com/valums/file-uploader</a></p>
+        <p><strong>@Html.ActionLink("Try it out here by going to the `upload` section.", "Index", "Upload")</strong></p>
     </div>
 </section>
 }
@@ -39,9 +45,12 @@
 <section class="features">
     <section class="feature">
         <img src="@Url.Content("~/images/aspNetHome.png")" alt="ASP.NET" />
-        <h3>Easy ASP.NET setup</h3>
+        <h3>ASP.NET</h3>
+        <p> 
+            To demonstrate what it takes to set this up in ASP.NET. 
+        </p>
         <p>
-            ... 
+            <strong>Note:</strong> A configuration element has been set in web.config - &lt;httpRuntime maxRequestLength="1073741824" /&gt;
         </p>
     </section>
     <section class="feature">
@@ -55,7 +64,7 @@
         <img src="@Url.Content("~/images/findHosting.png")" alt="Hosting" />
         <h3>Upload Controller</h3>
         <p>
-            @Html.ActionLink("Cilck here.", "Index", "Upload") for the upload page feature demo.
+            @Html.ActionLink("Cilck here.", "Index", "Upload") for the upload page feature demo. 
         </p>
     </section>
 </section>
