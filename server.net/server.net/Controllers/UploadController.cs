@@ -27,8 +27,7 @@ namespace server.net.Controllers
             return View();
         }
 
-
-        [HttpPost]
+        //[HttpPost]
         public virtual JsonResult UploadFile(object obj)
         {
             var fileName = Request.Headers["X-File-Name"];

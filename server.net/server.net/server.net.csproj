@@ -136,6 +136,7 @@
     <Content Include="Images\cloud-file-storage-lg.png" />
     <Content Include="Images\cloud-file-storage.jpg" />
     <Content Include="Images\cloud-file-storage.png" />
+    <Content Include="Scripts\fileuploader-qtests.js" />
     <Content Include="Scripts\jquery-1.6.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.6.2.js" />
     <Content Include="Scripts\jquery-1.6.2.min.js" />
