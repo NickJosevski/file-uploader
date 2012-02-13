@@ -136,6 +136,12 @@
     <Content Include="Images\cloud-file-storage-lg.png" />
     <Content Include="Images\cloud-file-storage.jpg" />
     <Content Include="Images\cloud-file-storage.png" />
+    <Content Include="Jasmine\jasmine-html.js" />
+    <Content Include="Jasmine\jasmine.css" />
+    <Content Include="Jasmine\jasmine.js" />
+    <Content Include="Jasmine\jasmine_favicon.png" />
+    <Content Include="Jasmine\SpecRunner.html" />
+    <Content Include="Scripts\fileuploader-jasmine-tests.js" />
     <Content Include="Scripts\fileuploader-qtests.js" />
     <Content Include="Scripts\jquery-1.6.2-vsdoc.js" />
     <Content Include="Scripts\jquery-1.6.2.js" />
