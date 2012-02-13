@@ -140,6 +140,7 @@
     <Content Include="Jasmine\jasmine.css" />
     <Content Include="Jasmine\jasmine.js" />
     <Content Include="Jasmine\jasmine_favicon.png" />
+    <Content Include="Jasmine\SpecHelper.js" />
     <Content Include="Jasmine\SpecRunner.html" />
     <Content Include="Scripts\fileuploader-jasmine-tests.js" />
     <Content Include="Scripts\fileuploader-qtests.js" />
