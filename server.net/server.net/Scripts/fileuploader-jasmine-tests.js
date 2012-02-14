@@ -158,27 +158,101 @@
 
         $("#temp-elements").empty(); // <-- remove
     });
-    
+
+    //this test can't really work, it is truly dependant on the construction of 'uploader'
+    /*it("should set up the drag drop area when _setupDragDrop is called", function () {
+    $("#temp-elements").empty();
+
+    uploader._setupDragDrop();
+        
+    var dialog = $("#dialog");
+    var uploadArea = dialog.find(":qq-uploader");
+
+    expect(dialog.length).toEqual(1);
+    expect(uploadArea.length).toEqual(1);
+
+    //
+    });*/
+
+    it("should find an item by fileId, when _getItemByFileId is called", function () {
+        uploader._addToList(1, 'file1.name');
+        uploader._addToList(2, 'file2.name');
+        uploader._addToList(3, 'file3.name');
+
+        var item = uploader._getItemByFileId(2);
+
+        console.log(item.firstChild.nextSibling);
+        expect(item).toBeDefined();
+
+        expect(item.firstChild.textContent).toEqual('file2.name');
+        expect(qq.hasClass(item.firstChild.nextSibling, 'qq-upload-cancel')).toEqual(false);
+        //expect(item.find(".qq-upload-file").html()).toEqual('file2.name');
+    });
+
+    it("should find an item by fileId, when _getItemByFileId is called", function () {
+        uploader._addToList(1, 'file1.name');
+        uploader._addToList(2, 'file2.name');
+        uploader._addToList(3, 'file3.name');
+
+        var item = uploader._getItemByFileId(1);
+
+        console.log(item);
+        expect(item).toBeDefined();
+        //TODO: _onComplete a file, and track that on complete modified the things...
+        expect(item.firstChild.textContent).toEqual('file1.name');
+        //expect(item.find(".qq-upload-file").html()).toEqual('file1.name');
+    });
+
+    it("should test _find", function () {
+        
+    });
+
+    it("should test qq.attach", function () {
+        //to simple? maybe no such thing on this lib...
+    });
+
+    it("should test qq.UploadDropZone", function () {
+
+    });
+
+    it("should test qq.UploadDropZone._attachEvents", function () {
+
+    });
+
+    it("should test qq.UploadDropZone._isValidFileDrag", function () {
+
+    });
+
+    //NEED to go further in unit testing this lib, as the few hours spent on trying to get _setupTemplate working fell over badly with it just refusing to work!
+
     //NOTE: This test cannot be active yet, as the fileuploader.js must remain unmodified for now, until enough tests can be created, 
     //the section that defines this in fileuploader.js can be uncommented at that point too
     /*
     //need a test for the re-creation re-init of the uploader, the setup of that button
     it("should re-setup the drop area and upload button when setupTemplate() is called", function() {
-        //clear our the setup as if we're coming back to the same page via ajax, and uploader is not gettin re-created
-        $('#file-uploader').empty();
+    //clear our the setup as if we're coming back to the same page via ajax, and uploader is not gettin re-created
+    $('#file-uploader').empty();
 
-        uploader._setupTemplate();
+    uploader._setupTemplate();
         
-        var list = $('#file-uploader').find(":input:file");
-        var buttons = $('#file-uploader').find(".qq-upload-button");
-        var dropArea = $('#file-uploader').find(".qq-upload-drop-area");
-        var dropAreaText = dropArea.children(":first-child");
+    var list = $('#file-uploader').find(":input:file");
+    var buttons = $('#file-uploader').find(".qq-upload-button");
+    var dropArea = $('#file-uploader').find(".qq-upload-drop-area");
+    var dropAreaText = dropArea.children(":first-child");
         
-        expect(list.length).toEqual(1);
-        expect(buttons.length).toEqual(1);
-        expect(dropArea.length).toEqual(1);
-        expect(dropAreaText.html()).toEqual("Drop files here to upload");
+    expect(list.length).toEqual(1);
+    expect(buttons.length).toEqual(1);
+    expect(dropArea.length).toEqual(1);
+    expect(dropAreaText.html()).toEqual("Drop files here to upload");
 
-        $("#temp-elements").empty(); // <-- remove
+    $("#temp-elements").empty(); // <-- remove
     });*/
+
+
+    //features:
+    // - can re-set itself correctly when page navigated away but in scope still attempting via _setupTemplate()
+    // - use jQuery instead of pure javascript, then we diverge and can't really support taking new patches from original creators, or sending stuff back to them...
+    // - solve the bug in Chrome about the div not dissapearing
+    // - introduce the better hover mechanism from the custom one I adjusted
+    // - can re-seed itself from past values (if page was navigated away)
 });

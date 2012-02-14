@@ -474,20 +474,20 @@ qq.FileUploaderBasic.prototype = {
  * Class that creates upload widget with drag-and-drop and file list
  * @inherits qq.FileUploaderBasic
  */
-qq.FileUploader = function(o){
+qq.FileUploader = function (o) {
     // call parent constructor
     qq.FileUploaderBasic.apply(this, arguments);
-    
+
     // additional options    
     qq.extend(this._options, {
         element: null,
         // if set, will be used instead of qq-upload-list in template
         listElement: null,
-                
-        template: '<div class="qq-uploader">' + 
+
+        template: '<div class="qq-uploader">' +
                 '<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>' +
                 '<div class="qq-upload-button">Upload a file</div>' +
-                '<ul class="qq-upload-list"></ul>' + 
+                '<ul class="qq-upload-list"></ul>' +
              '</div>',
 
         // template for one item in file list
@@ -497,15 +497,15 @@ qq.FileUploader = function(o){
                 '<span class="qq-upload-size"></span>' +
                 '<a class="qq-upload-cancel" href="#">Cancel</a>' +
                 '<span class="qq-upload-failed-text">Failed</span>' +
-            '</li>',        
-        
+            '</li>',
+
         classes: {
             // used to get elements from templates
             button: 'qq-upload-button',
             drop: 'qq-upload-drop-area',
             dropActive: 'qq-upload-drop-area-active',
             list: 'qq-upload-list',
-                        
+
             file: 'qq-upload-file',
             spinner: 'qq-upload-spinner',
             size: 'qq-upload-size',
@@ -518,16 +518,17 @@ qq.FileUploader = function(o){
         }
     });
     // overwrite options with user supplied    
-    qq.extend(this._options, o);       
+    qq.extend(this._options, o);
 
     this._element = this._options.element;
-    this._element.innerHTML = this._options.template;        
+    //this._setupTemplate(); //FEATURE ENH1
+    this._element.innerHTML = this._options.template;
     this._listElement = this._options.listElement || this._find(this._element, 'list');
-    
+
     this._classes = this._options.classes;
-        
-    this._button = this._createUploadButton(this._find(this._element, 'button'));        
-    
+
+    this._button = this._createUploadButton(this._find(this._element, 'button'));
+
     this._bindCancelEvent();
     this._setupDragDrop();
 };
@@ -547,6 +548,9 @@ qq.extend(qq.FileUploader.prototype, {
         
         return element;
     },
+    /*_setupTemplate: function () {
+        this._element.innerHTML = this._options.template;
+    },*/
     _setupDragDrop: function(){
         var self = this,
             dropArea = this._find(this._element, 'drop');                        
