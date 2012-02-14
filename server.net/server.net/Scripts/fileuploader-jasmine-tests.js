@@ -67,12 +67,63 @@
         var failed = list.find(".qq-upload-fail");
 
         expect(failed.length).toEqual(1);
-    });
-
-    it("should report progress on a call to _onProgress", function () {
+        
         //remove:
         $("#temp-elements").empty();
-
     });
-}
-);
+
+    it("should display 10 percent, 0.1kb file size and a cancel option, on a call to _onProgress", function () {
+
+        uploader._addToList(1, 'file1.name');
+        //deliberate shift of filename, as it isn't used for display/locating element, only id
+        uploader._onProgress(1, 'file2.name', 10, 100); 
+
+        var list = $('#file-uploader').find(".qq-upload-list");
+        var size = list.find(".qq-upload-size");
+        var file = list.find(".qq-upload-file");
+        var cancel = list.find(".qq-upload-cancel");
+
+        expect(file.html()).toEqual('file1.name');
+        expect(size.html()).toEqual('10% from 0.1kB');
+        expect(cancel.attr('href')).toEqual('#');
+        expect(cancel.html()).toEqual('Cancel');
+
+        //remove:
+        $("#temp-elements").empty();
+    });
+
+
+    it("should display only file size when 100% percent progress on a 1MB file, on a call to _onProgress", function () {
+
+        uploader._addToList(1, 'file1.name');
+        //deliberate shift of filename, as it isn't used for display/locating element, only id
+        uploader._onProgress(1, 'file2.name', 1000000, 1000000);
+
+        var list = $('#file-uploader').find(".qq-upload-list");
+        var size = list.find(".qq-upload-size");
+
+        expect(size.html()).toEqual('1.0MB');
+
+        //remove:
+        $("#temp-elements").empty();
+    });
+
+
+    it("should display complete file size with Gb suffix, on a call to _onProgress at 100%", function () {
+
+        uploader._addToList(1, 'file1.name');
+        //deliberate shift of filename, as it isn't used for display/locating element, only id
+        uploader._onProgress(1, 'file2.name', 1000000000, 1000000000);
+
+        var list = $('#file-uploader').find(".qq-upload-list");
+        var size = list.find(".qq-upload-size");
+
+        expect(size.html()).toEqual('0.9GB');
+
+        //remove:
+        //$("#temp-elements").empty();
+    });
+
+    //need a test for the re-creation re-init of the uploader, the setup of that button
+    
+});
