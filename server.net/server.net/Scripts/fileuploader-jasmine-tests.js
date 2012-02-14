@@ -20,7 +20,35 @@
     });
 
     it("should have created a new uploader", function () {
+        //testing the beforeEach setup is correct
         expect(uploader).toBeDefined();
+    });
+
+    it("should have _preventLeaveInProgress and therefore an attached event when calling _onSubmit", function () {
+        uploader._onSubmit(1, 'file1.name');
+
+        var event = ('onbeforeunload' in window) || ('beforeunload' in window);
+
+        expect(event).toBeTruthy();
+
+        $("#temp-elements").empty(); // <-- remove
+    });
+
+    it("should increment the files in progress variable via _onSubmit", function () {
+        uploader._onSubmit(1, 'file1.name');
+
+        expect(uploader._filesInProgress).toEqual(1);
+
+        $("#temp-elements").empty(); // <-- remove
+    });
+
+    it("should increment the files twice in progress variable via 2 calls to _onSubmit", function () {
+        uploader._onSubmit(1, 'file1.name');
+        uploader._onSubmit(2, 'file2.name');
+
+        expect(uploader._filesInProgress).toEqual(2);
+
+        $("#temp-elements").empty(); // <-- remove
     });
 
     it("should create 4 spans, including a spinner when _addToList is called", function () {
@@ -34,8 +62,7 @@
         expect(childSpans.length).toEqual(4);
         expect(spinner.length).toEqual(1);
 
-        //remove:
-        $("#temp-elements").empty();
+        $("#temp-elements").empty(); // <-- remove
     });
 
     it("should have 3 remaining spans, with the sucess one visible when _onComplete is called with a success result", function () {
@@ -55,8 +82,7 @@
         expect(size.length).toEqual(1);
         expect(failed.length).toEqual(1);
 
-        //remove:
-        $("#temp-elements").empty();
+        $("#temp-elements").empty(); // <-- remove
     });
 
     it("should show failed correctly, when _onComplete is called with a success = false result", function () {
@@ -67,16 +93,15 @@
         var failed = list.find(".qq-upload-fail");
 
         expect(failed.length).toEqual(1);
-        
-        //remove:
-        $("#temp-elements").empty();
+
+        $("#temp-elements").empty(); // <-- remove
     });
 
     it("should display 10 percent, 0.1kb file size and a cancel option, on a call to _onProgress", function () {
 
         uploader._addToList(1, 'file1.name');
         //deliberate shift of filename, as it isn't used for display/locating element, only id
-        uploader._onProgress(1, 'file2.name', 10, 100); 
+        uploader._onProgress(1, 'file2.name', 10, 100);
 
         var list = $('#file-uploader').find(".qq-upload-list");
         var size = list.find(".qq-upload-size");
@@ -88,10 +113,8 @@
         expect(cancel.attr('href')).toEqual('#');
         expect(cancel.html()).toEqual('Cancel');
 
-        //remove:
-        $("#temp-elements").empty();
+        $("#temp-elements").empty(); // <-- remove
     });
-
 
     it("should display only file size when 100% percent progress on a 1MB file, on a call to _onProgress", function () {
 
@@ -104,10 +127,8 @@
 
         expect(size.html()).toEqual('1.0MB');
 
-        //remove:
-        $("#temp-elements").empty();
+        $("#temp-elements").empty(); // <-- remove
     });
-
 
     it("should display complete file size with Gb suffix, on a call to _onProgress at 100%", function () {
 
@@ -120,10 +141,44 @@
 
         expect(size.html()).toEqual('0.9GB');
 
-        //remove:
-        //$("#temp-elements").empty();
+        $("#temp-elements").empty(); // <-- remove
     });
 
-    //need a test for the re-creation re-init of the uploader, the setup of that button
+    it("should set up the visual drag and drop area on the page when created", function () {
+
+        var list = $('#file-uploader').find(":input:file");
+        var buttons = $('#file-uploader').find(".qq-upload-button");
+        var dropArea = $('#file-uploader').find(".qq-upload-drop-area");
+        var dropAreaText = dropArea.children(":first-child");
+
+        expect(list.length).toEqual(1);
+        expect(buttons.length).toEqual(1);
+        expect(dropArea.length).toEqual(1);
+        expect(dropAreaText.html()).toEqual("Drop files here to upload");
+
+        $("#temp-elements").empty(); // <-- remove
+    });
     
+    //NOTE: This test cannot be active yet, as the fileuploader.js must remain unmodified for now, until enough tests can be created, 
+    //the section that defines this in fileuploader.js can be uncommented at that point too
+    /*
+    //need a test for the re-creation re-init of the uploader, the setup of that button
+    it("should re-setup the drop area and upload button when setupTemplate() is called", function() {
+        //clear our the setup as if we're coming back to the same page via ajax, and uploader is not gettin re-created
+        $('#file-uploader').empty();
+
+        uploader._setupTemplate();
+        
+        var list = $('#file-uploader').find(":input:file");
+        var buttons = $('#file-uploader').find(".qq-upload-button");
+        var dropArea = $('#file-uploader').find(".qq-upload-drop-area");
+        var dropAreaText = dropArea.children(":first-child");
+        
+        expect(list.length).toEqual(1);
+        expect(buttons.length).toEqual(1);
+        expect(dropArea.length).toEqual(1);
+        expect(dropAreaText.html()).toEqual("Drop files here to upload");
+
+        $("#temp-elements").empty(); // <-- remove
+    });*/
 });
