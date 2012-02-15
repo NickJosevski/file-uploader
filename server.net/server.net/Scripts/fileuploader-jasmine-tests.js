@@ -160,6 +160,8 @@
     });
 
     //this test can't really work, it is truly dependant on the construction of 'uploader'
+    //so resetting the display area, and then only calling _setupDragDrop will only a subset of the correction actions done.
+
     /*it("should set up the drag drop area when _setupDragDrop is called", function () {
     $("#temp-elements").empty();
 
@@ -196,19 +198,73 @@
 
         var item = uploader._getItemByFileId(1);
 
-        console.log(item);
         expect(item).toBeDefined();
         //TODO: _onComplete a file, and track that on complete modified the things...
         expect(item.firstChild.textContent).toEqual('file1.name');
         //expect(item.find(".qq-upload-file").html()).toEqual('file1.name');
     });
 
-    it("should test _find", function () {
-        
+    it("should find an item that exists on the initial setup of the uploader controls via the _find method", function () {
+
+        var root = $('#file-uploader')[0], button, drop, list, getSuccess;
+
+        button = uploader._find(root, 'button');
+        drop = uploader._find(root, 'drop');
+        list = uploader._find(root, 'list');
+        getSuccess = function () { uploader._find(root, 'success'); };
+
+        expect(button).toBeDefined();
+        expect(drop).toBeDefined();
+        expect(list).toBeDefined();
+        expect(getSuccess).toThrow(new Error("element not found success"));
+    });
+
+    it("should find an items that exist after upload begins _find method", function () {
+
+        var root = $('#file-uploader')[0], spinner, cancel, getSuccess;
+
+        uploader._addToList(1, 'file1.name');
+        spinner = uploader._find(root, 'spinner');
+        cancel = uploader._find(root, 'cancel');
+        getSuccess = function () { uploader._find(root, 'success'); };
+
+        expect(spinner).toBeDefined();
+        expect(cancel).toBeDefined();
+        expect(getSuccess).toThrow(new Error("element not found success"));
+    });
+
+    it("should find an items that exist after upload begins _find method", function () {
+
+        var root = $('#file-uploader')[0], spinner, cancel, getSuccess;
+
+        uploader._addToList(1, 'file1.name');
+        spinner = uploader._find(root, 'spinner');
+        cancel = uploader._find(root, 'cancel');
+        getSuccess = function () { uploader._find(root, 'success'); };
+
+        expect(spinner).toBeDefined();
+        expect(cancel).toBeDefined();
+        expect(getSuccess).toThrow(new Error("element not found success"));
+    });
+
+    it("should find an items that exist after upload completes sucessfully _find method", function () {
+
+        var root = $('#file-uploader')[0], getSpinner, getCancel, success;
+
+        uploader._addToList(1, 'file1.name');
+        uploader._onComplete(1, 'file.name', { success: true });
+
+        getSpinner = function () { uploader._find(root, 'spinner'); };
+        getCancel = function () { uploader._find(root, 'cancel'); };
+        success = uploader._find(root, 'success');
+
+        expect(getSpinner).toThrow(new Error("element not found spinner"));
+        expect(getCancel).toThrow(new Error("element not found cancel"));
+        expect(success).toBeDefined();
     });
 
     it("should test qq.attach", function () {
-        //to simple? maybe no such thing on this lib...
+        
     });
 
     it("should test qq.UploadDropZone", function () {
