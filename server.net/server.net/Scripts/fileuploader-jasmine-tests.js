@@ -255,7 +255,7 @@
         expect($('.qq-upload-list').click).toBeDefined();
     });
 
-    it("should test qq.UploadDropZone._attachEvents", function () {
+    it("should have the drop events set up on the dropArea when qq.UploadDropZone._attachEvents is called", function () {
 
         var dropAreaContent = $('<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>'),
             dropArea,
@@ -276,7 +276,26 @@
         expect(('ondragleave' in dropArea)).toBeTruthy();
         expect(('ondrop' in dropArea)).toBeTruthy();
     });
-    
+
+    it("should have the dragover event disabled on the document when qq.UploadDropZone._disableDropOutside is called", function () {
+
+        var dropAreaContent = $('<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>'),
+            dropArea,
+            root = $('#file-uploader');
+
+        root.empty();
+        root.append(dropAreaContent);
+        dropArea = $('.qq-upload-drop-area').get(0);
+
+        var dz = new qq.UploadDropZone({
+            element: dropArea
+        });
+        //call it again, in case flow changes, it is called in the creation
+        dz._disableDropOutside();
+
+        expect(('ondragover' in document)).toBeTruthy();
+        expect(qq.UploadDropZone.dropOutsideDisabled).toBeTruthy();
+    });
 });
 
 //planned features, once initial operation is unit tested:
@@ -294,8 +313,28 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
     });
 
     it("should test qq.UploadDropZone._isValidFileDrag", function () {
+        //can't easily test as it requires the dropped file event
+    });
+
+
+    it("should test qq.UploadButton", function () {
 
     });
+
+    it("should test qq.UploadButton._createInput styles", function () {
+
+    });
+
+
+    it("should test qq.UploadButton._createInput events", function () {
+
+    });
+
+
+    it("should test UploadHandlerAbstract", function () {
+        //is this the magic of the arrays, that could be fixed to be more verbose?
+    });
+    
 
     //NEED to go further in unit testing this lib, as the few hours spent on trying to get _setupTemplate working fell over badly with it just refusing to work!
 
