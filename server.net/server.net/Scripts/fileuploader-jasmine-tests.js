@@ -16,7 +16,7 @@
     });
 
     afterEach(function () {
-        //$("#temp-elements").empty();
+        $("#temp-elements").empty();
     });
 
     it("should have created a new uploader", function () {
@@ -31,7 +31,7 @@
 
         expect(event).toBeTruthy();
 
-        $("#temp-elements").empty(); // <-- remove
+        //$("#temp-elements").empty(); // <-- remove
     });
 
     it("should increment the files in progress variable via _onSubmit", function () {
@@ -39,7 +39,7 @@
 
         expect(uploader._filesInProgress).toEqual(1);
 
-        $("#temp-elements").empty(); // <-- remove
+        //$("#temp-elements").empty(); // <-- remove
     });
 
     it("should increment the files twice in progress variable via 2 calls to _onSubmit", function () {
@@ -48,7 +48,7 @@
 
         expect(uploader._filesInProgress).toEqual(2);
 
-        $("#temp-elements").empty(); // <-- remove
+        //$("#temp-elements").empty(); // <-- remove
     });
 
     it("should create 4 spans, including a spinner when _addToList is called", function () {
@@ -62,7 +62,7 @@
         expect(childSpans.length).toEqual(4);
         expect(spinner.length).toEqual(1);
 
-        $("#temp-elements").empty(); // <-- remove
+        //$("#temp-elements").empty(); // <-- remove
     });
 
     it("should have 3 remaining spans, with the sucess one visible when _onComplete is called with a success result", function () {
@@ -82,7 +82,7 @@
         expect(size.length).toEqual(1);
         expect(failed.length).toEqual(1);
 
-        $("#temp-elements").empty(); // <-- remove
+        //$("#temp-elements").empty(); // <-- remove
     });
 
     it("should show failed correctly, when _onComplete is called with a success = false result", function () {
@@ -94,7 +94,7 @@
 
         expect(failed.length).toEqual(1);
 
-        $("#temp-elements").empty(); // <-- remove
+        //$("#temp-elements").empty(); // <-- remove
     });
 
     it("should display 10 percent, 0.1kb file size and a cancel option, on a call to _onProgress", function () {
@@ -113,7 +113,7 @@
         expect(cancel.attr('href')).toEqual('#');
         expect(cancel.html()).toEqual('Cancel');
 
-        $("#temp-elements").empty(); // <-- remove
+        //$("#temp-elements").empty(); // <-- remove
     });
 
     it("should display only file size when 100% percent progress on a 1MB file, on a call to _onProgress", function () {
@@ -127,7 +127,7 @@
 
         expect(size.html()).toEqual('1.0MB');
 
-        $("#temp-elements").empty(); // <-- remove
+        //$("#temp-elements").empty(); // <-- remove
     });
 
     it("should display complete file size with Gb suffix, on a call to _onProgress at 100%", function () {
@@ -141,7 +141,7 @@
 
         expect(size.html()).toEqual('0.9GB');
 
-        $("#temp-elements").empty(); // <-- remove
+        //$("#temp-elements").empty(); // <-- remove
     });
 
     it("should set up the visual drag and drop area on the page when created", function () {
@@ -156,25 +156,8 @@
         expect(dropArea.length).toEqual(1);
         expect(dropAreaText.html()).toEqual("Drop files here to upload");
 
-        $("#temp-elements").empty(); // <-- remove
+        //$("#temp-elements").empty(); // <-- remove
     });
-
-    //this test can't really work, it is truly dependant on the construction of 'uploader'
-    //so resetting the display area, and then only calling _setupDragDrop will only a subset of the correction actions done.
-
-    /*it("should set up the drag drop area when _setupDragDrop is called", function () {
-    $("#temp-elements").empty();
-
-    uploader._setupDragDrop();
-        
-    var dialog = $("#dialog");
-    var uploadArea = dialog.find(":qq-uploader");
-
-    expect(dialog.length).toEqual(1);
-    expect(uploadArea.length).toEqual(1);
-
-    //
-    });*/
 
     it("should find an item by fileId, when _getItemByFileId is called", function () {
         uploader._addToList(1, 'file1.name');
@@ -183,7 +166,6 @@
 
         var item = uploader._getItemByFileId(2);
 
-        console.log(item.firstChild.nextSibling);
         expect(item).toBeDefined();
 
         expect(item.firstChild.textContent).toEqual('file2.name');
@@ -262,16 +244,52 @@
         expect(getCancel).toThrow(new Error("element not found cancel"));
         expect(success).toBeDefined();
     });
+    
+    it("should attach element when qq.attach is called, using attach code taken from _bindCancelEvent", function () {
 
-    it("should test qq.attach", function () {
-        
-    });
+        var root = $('#file-uploader')[0],
+            list = uploader._find(root, 'list');
 
-    it("should test qq.UploadDropZone", function () {
+        qq.attach(list, 'click', function (e) { console.log('unit test - ' + e); });
 
+        expect($('.qq-upload-list').click).toBeDefined();
     });
 
     it("should test qq.UploadDropZone._attachEvents", function () {
+
+        var dropAreaContent = $('<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>'),
+            dropArea,
+            root = $('#file-uploader');
+
+        root.empty();
+        root.append(dropAreaContent);
+        dropArea = $('.qq-upload-drop-area').get(0);
+
+        var dz = new qq.UploadDropZone({
+            element: dropArea
+        });
+        //call it again, in case flow changes, it is called in the creation
+        dz._attachEvents();
+
+        expect(('ondragenter' in dropArea)).toBeTruthy();
+        expect(('ondragenter' in dropArea)).toBeTruthy();
+        expect(('ondragleave' in dropArea)).toBeTruthy();
+        expect(('ondrop' in dropArea)).toBeTruthy();
+    });
+    
+});
+
+//planned features, once initial operation is unit tested:
+// - can re-set itself correctly when page navigated away but in scope still attempting via _setupTemplate()
+// - use jQuery instead of pure javascript, then we diverge and can't really support taking new patches from original creators, or sending stuff back to them...
+// - solve the issue in Chrome about the drag div not dissapearing
+// - introduce the better hover mechanism from the custom one I adjusted
+// - can re-seed itself from past values (if page was navigated away)
+
+describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
+    var uploader;
+
+    it("should test qq.UploadDropZone", function () {
 
     });
 
@@ -300,15 +318,38 @@
     expect(buttons.length).toEqual(1);
     expect(dropArea.length).toEqual(1);
     expect(dropAreaText.html()).toEqual("Drop files here to upload");
-
-    $("#temp-elements").empty(); // <-- remove
     });*/
 
+    //this test can't really work, it is truly dependant on the construction of 'uploader'
+    //so resetting the display area, and then only calling _setupDragDrop will only a subset of the correction actions done.
 
-    //features:
-    // - can re-set itself correctly when page navigated away but in scope still attempting via _setupTemplate()
-    // - use jQuery instead of pure javascript, then we diverge and can't really support taking new patches from original creators, or sending stuff back to them...
-    // - solve the bug in Chrome about the div not dissapearing
-    // - introduce the better hover mechanism from the custom one I adjusted
-    // - can re-seed itself from past values (if page was navigated away)
+    /*it("should set up the drag drop area when _setupDragDrop is called", function () {
+    $("#temp-elements").empty();
+
+    uploader._setupDragDrop();
+        
+    var dialog = $("#dialog");
+    var uploadArea = dialog.find(":qq-uploader");
+
+    expect(dialog.length).toEqual(1);
+    expect(uploadArea.length).toEqual(1);
+
+    //
+    });*/
+
+    beforeEach(function () {
+        var temp = $("#temp-elements");
+        temp.append(
+            $('<div id="dialog" title="Basic dialog">')
+                .append($('<div id="file-uploader"></div>'))
+        );
+
+        uploader = new qq.FileUploader({
+            element: $('#file-uploader')[0],
+            action: '/upload/UploadFile',
+            debug: true
+        });
+    });
+
+    //No after each, here in the in progress so we can debug elements
 });
