@@ -777,35 +777,35 @@ qq.UploadButton = function(o){
         // Make sure browse button is in the right side
         // in Internet Explorer
         direction: 'ltr'
-    });   
-    
-    this._input = this._createInput();
+    });
+
+    console.log('name == > ' + name);
 };
 
 qq.UploadButton.prototype = {
-    /* returns file input element */    
-    getInput: function(){
+    /* returns file input element */
+    getInput: function () {
         return this._input;
     },
     /* cleans/recreates the file input */
-    reset: function(){
-        if (this._input.parentNode){
-            qq.remove(this._input);    
-        }                
-        
+    reset: function () {
+        if (this._input.parentNode) {
+            qq.remove(this._input);
+        }
+
         qq.removeClass(this._element, this._options.focusClass);
         this._input = this._createInput();
-    },    
-    _createInput: function(){                
+    },
+    _createInput: function () {
         var input = document.createElement("input");
-        
-        if (this._options.multiple){
+
+        if (this._options.multiple) {
             input.setAttribute("multiple", "multiple");
         }
-                
+
         input.setAttribute("type", "file");
         input.setAttribute("name", this._options.name);
-        
+
         qq.css(input, {
             position: 'absolute',
             // in Opera only 'browse' button
@@ -821,36 +821,36 @@ qq.UploadButton.prototype = {
             cursor: 'pointer',
             opacity: 0
         });
-        
+
         this._element.appendChild(input);
 
         var self = this;
-        qq.attach(input, 'change', function(){
+        qq.attach(input, 'change', function () {
             self._options.onChange(input);
         });
-                
-        qq.attach(input, 'mouseover', function(){
+
+        qq.attach(input, 'mouseover', function () {
             qq.addClass(self._element, self._options.hoverClass);
         });
-        qq.attach(input, 'mouseout', function(){
+        qq.attach(input, 'mouseout', function () {
             qq.removeClass(self._element, self._options.hoverClass);
         });
-        qq.attach(input, 'focus', function(){
+        qq.attach(input, 'focus', function () {
             qq.addClass(self._element, self._options.focusClass);
         });
-        qq.attach(input, 'blur', function(){
+        qq.attach(input, 'blur', function () {
             qq.removeClass(self._element, self._options.focusClass);
         });
 
         // IE and Opera, unfortunately have 2 tab stops on file input
         // which is unacceptable in our case, disable keyboard access
-        if (window.attachEvent){
+        if (window.attachEvent) {
             // it is IE or Opera
             input.setAttribute('tabIndex', "-1");
         }
 
-        return input;            
-    }        
+        return input;
+    }
 };
 
 /**

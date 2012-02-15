@@ -526,7 +526,7 @@ qq.FileUploader = function (o) {
     this._listElement = this._options.listElement || this._find(this._element, 'list');
 
     this._classes = this._options.classes;
-
+    console.log(this._element);
     this._button = this._createUploadButton(this._find(this._element, 'button'));
 
     this._bindCancelEvent();
@@ -685,73 +685,73 @@ qq.UploadDropZone = function(o){
 };
 
 qq.UploadDropZone.prototype = {
-    _disableDropOutside: function(e){
+    _disableDropOutside: function (e) {
         // run only once for all instances
-        if (!qq.UploadDropZone.dropOutsideDisabled ){
+        if (!qq.UploadDropZone.dropOutsideDisabled) {
 
-            qq.attach(document, 'dragover', function(e){
-                if (e.dataTransfer){
+            qq.attach(document, 'dragover', function (e) {
+                if (e.dataTransfer) {
                     e.dataTransfer.dropEffect = 'none';
-                    e.preventDefault(); 
-                }           
+                    e.preventDefault();
+                }
             });
-            
-            qq.UploadDropZone.dropOutsideDisabled = true; 
-        }        
+
+            qq.UploadDropZone.dropOutsideDisabled = true;
+        }
     },
-    _attachEvents: function(){
-        var self = this;              
-                  
-        qq.attach(self._element, 'dragover', function(e){
+    _attachEvents: function () {
+        var self = this;
+        
+        qq.attach(self._element, 'dragover', function (e) {
             if (!self._isValidFileDrag(e)) return;
-            
+
             var effect = e.dataTransfer.effectAllowed;
-            if (effect == 'move' || effect == 'linkMove'){
+            if (effect == 'move' || effect == 'linkMove') {
                 e.dataTransfer.dropEffect = 'move'; // for FF (only move allowed)    
-            } else {                    
+            } else {
                 e.dataTransfer.dropEffect = 'copy'; // for Chrome
             }
-                                                     
+
             e.stopPropagation();
-            e.preventDefault();                                                                    
+            e.preventDefault();
         });
-        
-        qq.attach(self._element, 'dragenter', function(e){
+
+        qq.attach(self._element, 'dragenter', function (e) {
             if (!self._isValidFileDrag(e)) return;
-                        
+
             self._options.onEnter(e);
         });
-        
-        qq.attach(self._element, 'dragleave', function(e){
+
+        qq.attach(self._element, 'dragleave', function (e) {
             if (!self._isValidFileDrag(e)) return;
-            
+
             self._options.onLeave(e);
-            
-            var relatedTarget = document.elementFromPoint(e.clientX, e.clientY);                      
+
+            var relatedTarget = document.elementFromPoint(e.clientX, e.clientY);
             // do not fire when moving a mouse over a descendant
             if (qq.contains(this, relatedTarget)) return;
-                        
-            self._options.onLeaveNotDescendants(e); 
+
+            self._options.onLeaveNotDescendants(e);
         });
-                
-        qq.attach(self._element, 'drop', function(e){
+
+        qq.attach(self._element, 'drop', function (e) {
             if (!self._isValidFileDrag(e)) return;
-            
+
             e.preventDefault();
             self._options.onDrop(e);
-        });          
+        });
     },
-    _isValidFileDrag: function(e){
+    _isValidFileDrag: function (e) {
         var dt = e.dataTransfer,
-            // do not check dt.types.contains in webkit, because it crashes safari 4            
-            isWebkit = navigator.userAgent.indexOf("AppleWebKit") > -1;                        
+        // do not check dt.types.contains in webkit, because it crashes safari 4            
+            isWebkit = navigator.userAgent.indexOf("AppleWebKit") > -1;
 
         // dt.effectAllowed is none in Safari 5
         // dt.types.contains check is for firefox            
-        return dt && dt.effectAllowed != 'none' && 
+        return dt && dt.effectAllowed != 'none' &&
             (dt.files || (!isWebkit && dt.types.contains && dt.types.contains('Files')));
-        
-    }        
+
+    }
 }; 
 
 qq.UploadButton = function(o){
@@ -783,29 +783,29 @@ qq.UploadButton = function(o){
 };
 
 qq.UploadButton.prototype = {
-    /* returns file input element */    
-    getInput: function(){
+    /* returns file input element */
+    getInput: function () {
         return this._input;
     },
     /* cleans/recreates the file input */
-    reset: function(){
-        if (this._input.parentNode){
-            qq.remove(this._input);    
-        }                
-        
+    reset: function () {
+        if (this._input.parentNode) {
+            qq.remove(this._input);
+        }
+
         qq.removeClass(this._element, this._options.focusClass);
         this._input = this._createInput();
-    },    
-    _createInput: function(){                
+    },
+    _createInput: function () {
         var input = document.createElement("input");
-        
-        if (this._options.multiple){
+
+        if (this._options.multiple) {
             input.setAttribute("multiple", "multiple");
         }
-                
+
         input.setAttribute("type", "file");
         input.setAttribute("name", this._options.name);
-        
+
         qq.css(input, {
             position: 'absolute',
             // in Opera only 'browse' button
@@ -823,34 +823,33 @@ qq.UploadButton.prototype = {
         });
         
         this._element.appendChild(input);
-
         var self = this;
-        qq.attach(input, 'change', function(){
+        qq.attach(input, 'change', function () {
             self._options.onChange(input);
         });
-                
-        qq.attach(input, 'mouseover', function(){
+
+        qq.attach(input, 'mouseover', function () {
             qq.addClass(self._element, self._options.hoverClass);
         });
-        qq.attach(input, 'mouseout', function(){
+        qq.attach(input, 'mouseout', function () {
             qq.removeClass(self._element, self._options.hoverClass);
         });
-        qq.attach(input, 'focus', function(){
+        qq.attach(input, 'focus', function () {
             qq.addClass(self._element, self._options.focusClass);
         });
-        qq.attach(input, 'blur', function(){
+        qq.attach(input, 'blur', function () {
             qq.removeClass(self._element, self._options.focusClass);
         });
 
         // IE and Opera, unfortunately have 2 tab stops on file input
         // which is unacceptable in our case, disable keyboard access
-        if (window.attachEvent){
+        if (window.attachEvent) {
             // it is IE or Opera
             input.setAttribute('tabIndex', "-1");
         }
 
-        return input;            
-    }        
+        return input;
+    }
 };
 
 /**
