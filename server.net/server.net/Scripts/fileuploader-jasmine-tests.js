@@ -402,6 +402,104 @@ describe("file-upload", function () {
         expect(qq.UploadHandlerAbstract.prototype.cancel).toBeDefined();
         expect(qq.UploadHandlerAbstract.prototype.cancelAll).toBeDefined();
     });
+
+    it("should add an upload entry when UploadHandlerAbstract.upload is called", function () {
+
+        var uploadHandler = new qq.UploadHandlerAbstract({ opts: '' });
+        uploadHandler.upload(1, { x: 'a-param' });
+
+        expect(uploadHandler._queue.length).toEqual(1);
+        //there is always an 'undefined' leading the array
+        expect(uploadHandler._params.length).toEqual(2);
+        expect(uploadHandler._params[1].x).toEqual('a-param');
+    });
+
+    it("should add 3 upload entries when UploadHandlerAbstract.upload is called", function () {
+
+        var uploadHandler = new qq.UploadHandlerAbstract({ opts: '' });
+
+        uploadHandler.upload(1, { x: 'a-param1' });
+        uploadHandler.upload(2, { x: 'a-param2' });
+        uploadHandler.upload(3, { x: 'a-param3' });
+
+        expect(uploadHandler._queue.length).toEqual(3);
+        //there is always an 'undefined' leading the array
+        expect(uploadHandler._params.length).toEqual(4);
+        expect(uploadHandler._params[1].x).toEqual('a-param1');
+        expect(uploadHandler._params[2].x).toEqual('a-param2');
+        expect(uploadHandler._params[3].x).toEqual('a-param3');
+    });
+
+
+    it("should remove all 3 queued uploads when UploadHandlerAbstract._dequeue is called 3 times", function () {
+
+        var uploadHandler = new qq.UploadHandlerAbstract({ opts: '' });
+
+        uploadHandler.upload(1, { x: 'a-param1' });
+        uploadHandler.upload(2, { x: 'a-param2' });
+        uploadHandler.upload(3, { x: 'a-param3' });
+
+        expect(uploadHandler._queue.length).toEqual(3);
+        uploadHandler._dequeue(1);
+        expect(uploadHandler._queue.length).toEqual(2);
+        uploadHandler._dequeue(2);
+        expect(uploadHandler._queue.length).toEqual(1);
+        uploadHandler._dequeue(3);
+        expect(uploadHandler._queue.length).toEqual(0);
+    });
+
+    it("should clear all 3 queued uploads when UploadHandlerAbstract.cancel is called 3 times", function () {
+
+        var uploadHandler = new qq.UploadHandlerAbstract({ opts: '' });
+
+        //cancel on abstract calls _cancel which is empty ready to be overridden
+        //it also calls _dequeue
+
+        uploadHandler.upload(1, { x: 'a-param1' });
+        uploadHandler.upload(2, { x: 'a-param2' });
+        uploadHandler.upload(3, { x: 'a-param3' });
+
+        uploadHandler.cancel(1);
+        expect(uploadHandler._queue.length).toEqual(2);
+        uploadHandler.cancel(2);
+        expect(uploadHandler._queue.length).toEqual(1);
+        uploadHandler.cancel(3);
+        expect(uploadHandler._queue.length).toEqual(0);
+    });
+
+    it("should clear the entire queue when UploadHandlerAbstract.cancelAll is called", function () {
+
+        var uploadHandler = new qq.UploadHandlerAbstract({ opts: '' });
+
+        //cancel on abstract calls _cancel which is empty ready to be overridden
+        //it also calls _dequeue
+
+        uploadHandler.upload(1, { x: 'a-param1' });
+        uploadHandler.upload(2, { x: 'a-param2' });
+        uploadHandler.upload(3, { x: 'a-param3' });
+
+        uploadHandler.cancelAll();
+        expect(uploadHandler._queue.length).toEqual(0);
+        expect(uploadHandler._queue).toEqual([]);
+    });
+
+    it("should store and track files added when UploadHandlerForm.add is called", function () {
+        var uhf = new qq.UploadHandlerForm({}),
+            root = $('#file-uploader'),
+            input = '<input id="find-me" type="file" />',
+            inputElem;
+
+        root.parent().append('<input id="find-me" type="file" />');
+        inputElem = $('#find-me').get(0);
+
+
+        expect(inputElem).toBeDefined();
+        uhf.add(inputElem);
+        //expect it to be gone, after the add is complete
+        inputElem = $('#find-me').get(0);
+        expect(inputElem).toBeUndefined();
+    });
+    
 });
 
 //planned features, once initial operation is unit tested:
@@ -421,61 +519,95 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
 
     //FileUploaderBasic._createUploadHandler
 
-    it("should add an upload entry when UploadHandlerAbstract.upload is called", function () {
+    /*expect(uploadHandler._xhrs[1]).toBeNull();
+    expect(uploadHandler._files[2]).toBeNull();
+    expect(uploadHandler._xhrs[2]).toBeNull();
+    expect(uploadHandler._files[3]).toBeNull();
+    expect(uploadHandler._xhrs[3]).toBeNull();*/
 
-        var uploadHandler = new qq.UploadHandlerAbstract({ opts: '' });
-        uploadHandler.upload(1, { x: 'a-param' });
+    it("should test UploadHandlerForm._cancel is called", function () {
+        var uhf = new qq.UploadHandlerForm({}),
+            root = $('#file-uploader'),
+            input = '<input id="find-me" type="file" />',
+            inputElem;
 
-        console.log(uploadHandler._queue);
-        expect(uploadHandler._queue.length).toEqual(1);
-        console.log(uploadHandler._params);
-        //there is always an 'undefined' leading the array
-        expect(uploadHandler._params.length).toEqual(2);
-        expect(uploadHandler._params[1].x).toEqual('a-param');
+        expect(inputElem).toBeUndefined();
+    });
+
+    it("should test UploadHandlerForm._upload is called", function () {
+        var uhf = new qq.UploadHandlerForm({}),
+            root = $('#file-uploader'),
+            input = '<input id="find-me" type="file" />',
+            inputElem;
+
+        expect(inputElem).toBeUndefined();
+    });
+
+    it("should test UploadHandlerForm._attachLoadEvent is called", function () {
+        var uhf = new qq.UploadHandlerForm({}),
+            root = $('#file-uploader'),
+            input = '<input id="find-me" type="file" />',
+            inputElem;
+
+        expect(inputElem).toBeUndefined();
+    });
+
+    it("should test UploadHandlerForm._getIframeContentJSON is called", function () {
+        var uhf = new qq.UploadHandlerForm({}),
+            root = $('#file-uploader'),
+            input = '<input id="find-me" type="file" />',
+            inputElem;
+
+        expect(inputElem).toBeUndefined();
+    });
+
+    it("should test UploadHandlerForm._createIframe is called", function () {
+        var uhf = new qq.UploadHandlerForm({}),
+            root = $('#file-uploader'),
+            input = '<input id="find-me" type="file" />',
+            inputElem;
+
+        expect(inputElem).toBeUndefined();
     });
     
-    it("should add 3 upload entries when UploadHandlerAbstract.upload is called", function () {
+    it("should test UploadHandlerForm._createForm is called", function () {
+        var uhf = new qq.UploadHandlerForm({}),
+            root = $('#file-uploader'),
+            input = '<input id="find-me" type="file" />',
+            inputElem;
 
-        var uploadHandler = new qq.UploadHandlerAbstract({ opts: '' });
-        
-        uploadHandler.upload(1, { x: 'a-param1' });
-        uploadHandler.upload(2, { x: 'a-param2' });
-        uploadHandler.upload(3, { x: 'a-param3' });
-
-        console.log(uploadHandler._queue);
-        expect(uploadHandler._queue.length).toEqual(3);
-        console.log(uploadHandler._params);
-        //there is always an 'undefined' leading the array
-        expect(uploadHandler._params.length).toEqual(4);
-        expect(uploadHandler._params[1].x).toEqual('a-param1');
-        expect(uploadHandler._params[2].x).toEqual('a-param2');
-        expect(uploadHandler._params[3].x).toEqual('a-param3');
+        expect(inputElem).toBeUndefined();
     });
 
-    it("should  UploadHandlerAbstract.cancel is called", function () {
 
-        var uploadHandler = new qq.UploadHandlerAbstract({ opts: '' });
+    it("should test UploadHandlerXhr", function () {
+    });
 
-        uploadHandler.upload(1, { x: 'a-param1' });
-        uploadHandler.upload(2, { x: 'a-param2' });
-        uploadHandler.upload(3, { x: 'a-param3' });
+    it("should test UploadHandlerXhr.isSupported", function () {
+    });
 
-        console.log(uploadHandler._queue);
-        expect(uploadHandler._queue.length).toEqual(3);
-        console.log(uploadHandler._params);
-        //there is always an 'undefined' leading the array
-        expect(uploadHandler._params.length).toEqual(4);
-        expect(uploadHandler._params[1].x).toEqual('a-param1');
-        expect(uploadHandler._params[2].x).toEqual('a-param2');
-        expect(uploadHandler._params[3].x).toEqual('a-param3');
+    it("should test UploadHandlerXhr.add", function () {
+    });
+    it("should test UploadHandlerXhr.getName", function () {
+    });
+    it("should test UploadHandlerXhr.getSize", function () {
+    });
+    it("should test UploadHandlerXhr.getLoaded", function () {
+    });
+    it("should test UploadHandlerXhr._upload", function () {
+    });
+    it("should test UploadHandlerXhr._onComplete", function () {
+    });
+    it("should test UploadHandlerXhr._cancel", function () {
     });
     
-    it("should  UploadHandlerAbstract.cancelAll is called", function () {
-    });
-
-    it("should  UploadHandlerAbstract._dequeue is called", function () {
-    });
-
+    /*
+        var fakeFile = {
+            name: 'fn',
+            fileName: 'fn',
+            fileSize: 10240000,
+            value: '0x0000001'
+        };*/
 
     //NEED to go further in unit testing this lib, as the few hours spent on trying to get _setupTemplate working fell over badly with it just refusing to work!
 

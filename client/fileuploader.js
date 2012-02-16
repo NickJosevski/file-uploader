@@ -884,7 +884,7 @@ qq.UploadHandlerAbstract.prototype = {
     * Sends the file identified by id and additional query params to the server
     */
     upload: function (id, params) {
-        
+
         var len = this._queue.push(id);
 
         var copy = {};
@@ -964,30 +964,30 @@ qq.UploadHandlerForm = function(o){
 qq.extend(qq.UploadHandlerForm.prototype, qq.UploadHandlerAbstract.prototype);
 
 qq.extend(qq.UploadHandlerForm.prototype, {
-    add: function(fileInput){
+    add: function (fileInput) {
         fileInput.setAttribute('name', 'qqfile');
-        var id = 'qq-upload-handler-iframe' + qq.getUniqueId();       
-        
+        var id = 'qq-upload-handler-iframe' + qq.getUniqueId();
+
         this._inputs[id] = fileInput;
-        
+
         // remove file input from DOM
-        if (fileInput.parentNode){
+        if (fileInput.parentNode) {
             qq.remove(fileInput);
         }
-                
+
         return id;
     },
-    getName: function(id){
+    getName: function (id) {
         // get input value and remove path to normalize
         return this._inputs[id].value.replace(/.*(\/|\\)/, "");
-    },    
-    _cancel: function(id){
+    },
+    _cancel: function (id) {
         this._options.onCancel(id, this.getName(id));
-        
-        delete this._inputs[id];        
+
+        delete this._inputs[id];
 
         var iframe = document.getElementById(id);
-        if (iframe){
+        if (iframe) {
             // to cancel request set src to something else
             // we use src="javascript:false;" because it doesn't
             // trigger ie6 prompt on https
@@ -995,54 +995,54 @@ qq.extend(qq.UploadHandlerForm.prototype, {
 
             qq.remove(iframe);
         }
-    },     
-    _upload: function(id, params){                        
+    },
+    _upload: function (id, params) {
         var input = this._inputs[id];
-        
-        if (!input){
+
+        if (!input) {
             throw new Error('file with passed id was not added, or already uploaded or cancelled');
-        }                
+        }
 
         var fileName = this.getName(id);
-                
+
         var iframe = this._createIframe(id);
         var form = this._createForm(iframe, params);
         form.appendChild(input);
 
         var self = this;
-        this._attachLoadEvent(iframe, function(){                                 
+        this._attachLoadEvent(iframe, function () {
             self.log('iframe loaded');
-            
+
             var response = self._getIframeContentJSON(iframe);
 
             self._options.onComplete(id, fileName, response);
             self._dequeue(id);
-            
+
             delete self._inputs[id];
             // timeout added to fix busy state in FF3.6
-            setTimeout(function(){
+            setTimeout(function () {
                 qq.remove(iframe);
             }, 1);
         });
 
-        form.submit();        
-        qq.remove(form);        
-        
+        form.submit();
+        qq.remove(form);
+
         return id;
-    }, 
-    _attachLoadEvent: function(iframe, callback){
-        qq.attach(iframe, 'load', function(){
+    },
+    _attachLoadEvent: function (iframe, callback) {
+        qq.attach(iframe, 'load', function () {
             // when we remove iframe from dom
             // the request stops, but in IE load
             // event fires
-            if (!iframe.parentNode){
+            if (!iframe.parentNode) {
                 return;
             }
 
             // fixing Opera 10.53
             if (iframe.contentDocument &&
                 iframe.contentDocument.body &&
-                iframe.contentDocument.body.innerHTML == "false"){
+                iframe.contentDocument.body.innerHTML == "false") {
                 // In Opera event is fired second time
                 // when body.innerHTML changed from false
                 // to server response approx. after 1 sec
@@ -1054,28 +1054,28 @@ qq.extend(qq.UploadHandlerForm.prototype, {
         });
     },
     /**
-     * Returns json object received by iframe from server.
-     */
-    _getIframeContentJSON: function(iframe){
+    * Returns json object received by iframe from server.
+    */
+    _getIframeContentJSON: function (iframe) {
         // iframe.contentWindow.document - for IE<7
-        var doc = iframe.contentDocument ? iframe.contentDocument: iframe.contentWindow.document,
+        var doc = iframe.contentDocument ? iframe.contentDocument : iframe.contentWindow.document,
             response;
-        
+
         this.log("converting iframe's innerHTML to JSON");
         this.log("innerHTML = " + doc.body.innerHTML);
-                        
+
         try {
             response = eval("(" + doc.body.innerHTML + ")");
-        } catch(err){
+        } catch (err) {
             response = {};
-        }        
+        }
 
         return response;
     },
     /**
-     * Creates iframe with unique name
-     */
-    _createIframe: function(id){
+    * Creates iframe with unique name
+    */
+    _createIframe: function (id) {
         // We can't use following code as the name attribute
         // won't be properly registered in IE6, and new window
         // on form submit will open
@@ -1093,9 +1093,9 @@ qq.extend(qq.UploadHandlerForm.prototype, {
         return iframe;
     },
     /**
-     * Creates form, that will be submitted to iframe
-     */
-    _createForm: function(iframe, params){
+    * Creates form, that will be submitted to iframe
+    */
+    _createForm: function (iframe, params) {
         // We can't use the following code in IE6
         // var form = document.createElement('form');
         // form.setAttribute('method', 'post');
@@ -1144,55 +1144,56 @@ qq.extend(qq.UploadHandlerXhr.prototype, qq.UploadHandlerAbstract.prototype)
 
 qq.extend(qq.UploadHandlerXhr.prototype, {
     /**
-     * Adds file to the queue
-     * Returns id to use with upload, cancel
-     **/    
-    add: function(file){
-        if (!(file instanceof File)){
+    * Adds file to the queue
+    * Returns id to use with upload, cancel
+    **/
+    add: function (file) {
+        if (!(file instanceof File)) {
             throw new Error('Passed obj in not a File (in qq.UploadHandlerXhr)');
         }
-                
-        return this._files.push(file) - 1;        
+
+        return this._files.push(file) - 1;
     },
-    getName: function(id){        
+    getName: function (id) {
         var file = this._files[id];
         // fix missing name in Safari 4
-        return file.fileName != null ? file.fileName : file.name;       
+        return file.fileName != null ? file.fileName : file.name;
     },
-    getSize: function(id){
+    getSize: function (id) {
         var file = this._files[id];
         return file.fileSize != null ? file.fileSize : file.size;
-    },    
-    /**
-     * Returns uploaded bytes for file identified by id 
-     */    
-    getLoaded: function(id){
-        return this._loaded[id] || 0; 
     },
     /**
-     * Sends the file identified by id and additional query params to the server
-     * @param {Object} params name-value string pairs
-     */    
-    _upload: function(id, params){
+    * Returns uploaded bytes for file identified by id 
+    */
+    getLoaded: function (id) {
+        return this._loaded[id] || 0;
+    },
+    /**
+    * Sends the file identified by id and additional query params to the server
+    * @param {Object} params name-value string pairs
+    */
+    _upload: function (id, params) {
+
         var file = this._files[id],
             name = this.getName(id),
             size = this.getSize(id);
-                
+
         this._loaded[id] = 0;
-                                
+
         var xhr = this._xhrs[id] = new XMLHttpRequest();
         var self = this;
-                                        
-        xhr.upload.onprogress = function(e){
-            if (e.lengthComputable){
+
+        xhr.upload.onprogress = function (e) {
+            if (e.lengthComputable) {
                 self._loaded[id] = e.loaded;
                 self._options.onProgress(id, name, e.loaded, e.total);
             }
         };
 
-        xhr.onreadystatechange = function(){            
-            if (xhr.readyState == 4){
-                self._onComplete(id, xhr);                    
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState == 4) {
+                self._onComplete(id, xhr);
             }
         };
 
@@ -1208,45 +1209,46 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
         xhr.setRequestHeader("Content-Type", "application/octet-stream");
         xhr.send(file);
     },
-    _onComplete: function(id, xhr){
+    _onComplete: function (id, xhr) {
         // the request was aborted/cancelled
         if (!this._files[id]) return;
-        
+
         var name = this.getName(id);
         var size = this.getSize(id);
-        
+
         this._options.onProgress(id, name, size, size);
-                
-        if (xhr.status == 200){
+
+        if (xhr.status == 200) {
             this.log("xhr - server response received");
             this.log("responseText = " + xhr.responseText);
-                        
+
             var response;
-                    
+
             try {
                 response = eval("(" + xhr.responseText + ")");
-            } catch(err){
+            } catch (err) {
                 response = {};
             }
-            
+
             this._options.onComplete(id, name, response);
-                        
-        } else {                   
+
+        } else {
             this._options.onComplete(id, name, {});
         }
-                
+
         this._files[id] = null;
-        this._xhrs[id] = null;    
-        this._dequeue(id);                    
+        this._xhrs[id] = null;
+        this._dequeue(id);
     },
-    _cancel: function(id){
+    _cancel: function (id) {
+        console.log('CC'+_files);
         this._options.onCancel(id, this.getName(id));
         
         this._files[id] = null;
-        
-        if (this._xhrs[id]){
+
+        if (this._xhrs[id]) {
             this._xhrs[id].abort();
-            this._xhrs[id] = null;                                   
+            this._xhrs[id] = null;
         }
     }
 });
