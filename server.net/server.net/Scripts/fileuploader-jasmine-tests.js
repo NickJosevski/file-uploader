@@ -1,4 +1,7 @@
-﻿describe("file-upload", function () {
+﻿
+var dd = dd || {};
+
+describe("file-upload", function () {
     return;
     var uploader, templateFromFileUploader;
 
@@ -354,6 +357,51 @@
         expect(fileInput).toBeDefined();
         expect(fileInput.length).toEqual(1);
     });
+    
+    it("should test qq.UploadButton._createInput events", function () {
+
+        var root = $('#file-uploader'),
+            buttonClass,
+            buttonDiv = $(".qq-upload-button").get(0),
+            fileInput,
+            changeFunc = function (input) { console.log(input); };
+
+        root.find(':input').remove();
+
+        buttonClass = new qq.UploadButton({
+            element: buttonDiv,
+            multiple: true,
+            onChange: changeFunc
+        });
+        //it was created, but kill it and ensure the _createInput() call can handle it on its own
+        root.find(':input').remove();
+        //call it again, in case flow changes, it is called in the creation
+        buttonClass._createInput();
+
+        fileInput = $('#file-uploader').find(':input');
+
+        expect(fileInput).toBeDefined();
+        expect(('change' in fileInput)).toBeTruthy();
+        expect(('mouseover' in fileInput)).toBeTruthy();
+        expect(('mouseout' in fileInput)).toBeTruthy();
+        expect(('focus' in fileInput)).toBeTruthy();
+        expect(('blur' in fileInput)).toBeTruthy();
+    });
+
+    it("should have an empty queue when UploadHandlerAbstract is called with options", function () {
+        //Class for uploading files using form and iframe
+
+        qq.UploadHandlerAbstract({ opts: '' });
+
+        expect(qq._queue).toBeDefined();
+        expect(qq._queue.length).toEqual(0);
+        //not sure if these are worth checking the existance of:
+        expect(qq.UploadHandlerAbstract.prototype.log).toBeDefined();
+        expect(qq.UploadHandlerAbstract.prototype.add).toBeDefined();
+        expect(qq.UploadHandlerAbstract.prototype.upload).toBeDefined();
+        expect(qq.UploadHandlerAbstract.prototype.cancel).toBeDefined();
+        expect(qq.UploadHandlerAbstract.prototype.cancelAll).toBeDefined();
+    });
 });
 
 //planned features, once initial operation is unit tested:
@@ -363,6 +411,7 @@
 // - introduce the better hover mechanism from the custom one I adjusted
 // - can re-seed itself from past values (if page was navigated away)
 
+
 describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
     var uploader, templateFromFileUploader;
 
@@ -370,19 +419,62 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
     //can't easily test as it requires the dropped file event
     });*/
 
+    //FileUploaderBasic._createUploadHandler
 
-    /*it("should test qq.UploadButton._createInput events", function () {
+    it("should add an upload entry when UploadHandlerAbstract.upload is called", function () {
 
-    change
-    mouseover
-    mouseout
-    focus
-    blur
-    });*/
+        var uploadHandler = new qq.UploadHandlerAbstract({ opts: '' });
+        uploadHandler.upload(1, { x: 'a-param' });
 
-    /*it("should test UploadHandlerAbstract", function () {
-    //is this the magic of the arrays, that could be fixed to be more verbose?
-    });*/
+        console.log(uploadHandler._queue);
+        expect(uploadHandler._queue.length).toEqual(1);
+        console.log(uploadHandler._params);
+        //there is always an 'undefined' leading the array
+        expect(uploadHandler._params.length).toEqual(2);
+        expect(uploadHandler._params[1].x).toEqual('a-param');
+    });
+    
+    it("should add 3 upload entries when UploadHandlerAbstract.upload is called", function () {
+
+        var uploadHandler = new qq.UploadHandlerAbstract({ opts: '' });
+        
+        uploadHandler.upload(1, { x: 'a-param1' });
+        uploadHandler.upload(2, { x: 'a-param2' });
+        uploadHandler.upload(3, { x: 'a-param3' });
+
+        console.log(uploadHandler._queue);
+        expect(uploadHandler._queue.length).toEqual(3);
+        console.log(uploadHandler._params);
+        //there is always an 'undefined' leading the array
+        expect(uploadHandler._params.length).toEqual(4);
+        expect(uploadHandler._params[1].x).toEqual('a-param1');
+        expect(uploadHandler._params[2].x).toEqual('a-param2');
+        expect(uploadHandler._params[3].x).toEqual('a-param3');
+    });
+
+    it("should  UploadHandlerAbstract.cancel is called", function () {
+
+        var uploadHandler = new qq.UploadHandlerAbstract({ opts: '' });
+
+        uploadHandler.upload(1, { x: 'a-param1' });
+        uploadHandler.upload(2, { x: 'a-param2' });
+        uploadHandler.upload(3, { x: 'a-param3' });
+
+        console.log(uploadHandler._queue);
+        expect(uploadHandler._queue.length).toEqual(3);
+        console.log(uploadHandler._params);
+        //there is always an 'undefined' leading the array
+        expect(uploadHandler._params.length).toEqual(4);
+        expect(uploadHandler._params[1].x).toEqual('a-param1');
+        expect(uploadHandler._params[2].x).toEqual('a-param2');
+        expect(uploadHandler._params[3].x).toEqual('a-param3');
+    });
+    
+    it("should  UploadHandlerAbstract.cancelAll is called", function () {
+    });
+
+    it("should  UploadHandlerAbstract._dequeue is called", function () {
+    });
 
 
     //NEED to go further in unit testing this lib, as the few hours spent on trying to get _setupTemplate working fell over badly with it just refusing to work!

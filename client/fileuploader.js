@@ -526,7 +526,7 @@ qq.FileUploader = function (o) {
     this._listElement = this._options.listElement || this._find(this._element, 'list');
 
     this._classes = this._options.classes;
-    console.log(this._element);
+    
     this._button = this._createUploadButton(this._find(this._element, 'button'));
 
     this._bindCancelEvent();
@@ -872,82 +872,83 @@ qq.UploadHandlerAbstract = function(o){
     this._params = [];
 };
 qq.UploadHandlerAbstract.prototype = {
-    log: function(str){
-        if (this._options.debug && window.console) console.log('[uploader] ' + str);        
+    log: function (str) {
+        if (this._options.debug && window.console) console.log('[uploader] ' + str);
     },
     /**
-     * Adds file or file input to the queue
-     * @returns id
-     **/    
-    add: function(file){},
+    * Adds file or file input to the queue
+    * @returns id
+    **/
+    add: function (file) { },
     /**
-     * Sends the file identified by id and additional query params to the server
-     */
-    upload: function(id, params){
+    * Sends the file identified by id and additional query params to the server
+    */
+    upload: function (id, params) {
+        
         var len = this._queue.push(id);
 
-        var copy = {};        
+        var copy = {};
         qq.extend(copy, params);
-        this._params[id] = copy;        
-                
+        this._params[id] = copy;
+
         // if too many active uploads, wait...
-        if (len <= this._options.maxConnections){               
+        if (len <= this._options.maxConnections) {
             this._upload(id, this._params[id]);
         }
     },
     /**
-     * Cancels file upload by id
-     */
-    cancel: function(id){
+    * Cancels file upload by id
+    */
+    cancel: function (id) {
         this._cancel(id);
         this._dequeue(id);
     },
     /**
-     * Cancells all uploads
-     */
-    cancelAll: function(){
-        for (var i=0; i<this._queue.length; i++){
+    * Cancells all uploads
+    */
+    cancelAll: function () {
+        for (var i = 0; i < this._queue.length; i++) {
             this._cancel(this._queue[i]);
         }
         this._queue = [];
     },
     /**
-     * Returns name of the file identified by id
-     */
-    getName: function(id){},
+    * Returns name of the file identified by id
+    */
+    getName: function (id) { },
     /**
-     * Returns size of the file identified by id
-     */          
-    getSize: function(id){},
+    * Returns size of the file identified by id
+    */
+    getSize: function (id) { },
     /**
-     * Returns id of files being uploaded or
-     * waiting for their turn
-     */
-    getQueue: function(){
+    * Returns id of files being uploaded or
+    * waiting for their turn
+    */
+    getQueue: function () {
         return this._queue;
     },
     /**
-     * Actual upload method
-     */
-    _upload: function(id){},
+    * Actual upload method
+    */
+    _upload: function (id) { },
     /**
-     * Actual cancel method
-     */
-    _cancel: function(id){},     
+    * Actual cancel method
+    */
+    _cancel: function (id) { },
     /**
-     * Removes element from queue, starts upload of next
-     */
-    _dequeue: function(id){
+    * Removes element from queue, starts upload of next
+    */
+    _dequeue: function (id) {
         var i = qq.indexOf(this._queue, id);
         this._queue.splice(i, 1);
-                
+
         var max = this._options.maxConnections;
-        
-        if (this._queue.length >= max && i < max){
-            var nextId = this._queue[max-1];
+
+        if (this._queue.length >= max && i < max) {
+            var nextId = this._queue[max - 1];
             this._upload(nextId, this._params[nextId]);
         }
-    }        
+    }
 };
 
 /**
