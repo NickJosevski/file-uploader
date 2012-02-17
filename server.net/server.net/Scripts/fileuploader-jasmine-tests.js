@@ -1,4 +1,10 @@
-﻿
+﻿var cl = function(d) {
+    console.log(d);
+};
+var clp = function (prefix, d) {
+    cl(prefix + ' -> ' + d);
+};
+
 var dd = dd || {};
 
 describe("file-upload", function () {
@@ -332,6 +338,15 @@ describe("file-upload", function () {
         expect(button._element).toEqual(buttonDiv);
     });
 
+    it("should have an item removed from the DOM when qq.remove is called", function () {
+
+        var root = $('#file-uploader');
+
+        qq.remove(root.find(':input').get(0));
+
+        expect(root.find(':input').get(0)).toBeUndefined();
+    });
+
     it("should test qq.UploadButton._createInput styles", function () {
 
         var root = $('#file-uploader'),
@@ -357,7 +372,7 @@ describe("file-upload", function () {
         expect(fileInput).toBeDefined();
         expect(fileInput.length).toEqual(1);
     });
-    
+
     it("should test qq.UploadButton._createInput events", function () {
 
         var root = $('#file-uploader'),
@@ -489,7 +504,7 @@ describe("file-upload", function () {
             input = '<input id="find-me" type="file" />',
             inputElem;
 
-        root.parent().append('<input id="find-me" type="file" />');
+        root.parent().append(input);
         inputElem = $('#find-me').get(0);
 
 
@@ -499,7 +514,127 @@ describe("file-upload", function () {
         inputElem = $('#find-me').get(0);
         expect(inputElem).toBeUndefined();
     });
+
+    it("should create and inject (into DOM) an iframe when UploadHandlerForm._createIframe is called", function () {
+        var uhf = new qq.UploadHandlerForm({}),
+            root = $('#file-uploader'),
+            input = '<input id="find-me" type="file" />',
+            inputElem,
+            iframe,
+            iframeViaSearch,
+            id;
+        root.parent().append(input);
+        inputElem = $('#find-me').get(0);
+
+        id = uhf.add(inputElem);
+
+        iframe = uhf._createIframe(id);
+        iframeViaSearch = $('#' + id);
+        expect(iframe).toBeDefined();
+        expect(iframeViaSearch.get(0)).toBeDefined();
+    });
+
+    it("should have inputs defined and begin upload when UploadHandlerForm._upload is called", function () {
+        var uhf = new qq.UploadHandlerForm({}),
+            root = $('#file-uploader'),
+            input = '<input id="find-me" type="file" />',
+            inputElem,
+            iframeViaSearch,
+            id;
+        root.parent().append(input);
+        inputElem = $('#find-me').get(0);
+
+        id = uhf.add(inputElem);
+
+        uhf._upload(id, {});
+        iframeViaSearch = $('#' + id);
+        expect(uhf._inputs[id]).toBeDefined();
+        expect(iframeViaSearch.get(0)).toBeDefined();
+    });
+
+    it("should test that UploadHandlerForm._createIframe is called when a an upload happens", function () {
+
+        var uhf = new qq.UploadHandlerForm({}),
+            root = $('#file-uploader'),
+            input = '<input id="find-me" type="file" />',
+            inputElem,
+            iframeViaSearch,
+            id;
+        root.parent().append(input);
+        inputElem = $('#find-me').get(0);
+
+        id = uhf.add(inputElem);
+
+        uhf._upload(id, {});
+        iframeViaSearch = $('#' + id);
+        expect(iframeViaSearch.get(0)).toBeDefined();
+    });
     
+    it("should remove the iframe from the DOM when UploadHandlerForm._cancel is called", function () {
+
+        var uhf = new qq.UploadHandlerForm({}),
+            root = $('#file-uploader'),
+            input = '<input id="find-me" type="file" />',
+            inputElem,
+            iframeViaSearch,
+            id;
+        root.parent().append(input);
+        inputElem = $('#find-me').get(0);
+
+        id = uhf.add(inputElem);
+
+        uhf._upload(id, {});
+        iframeViaSearch = $('#' + id);
+        expect(iframeViaSearch.get(0)).toBeDefined();
+
+        uhf._cancel(id);
+        iframeViaSearch = $('#' + id);
+        expect(iframeViaSearch.length).toEqual(0);
+    });
+
+    it("should be able to execute eval() on the json in an iframe via a call to UploadHandlerForm._getIframeContentJSON", function () {
+
+        var uhf = new qq.UploadHandlerForm({}),
+            root = $('#file-uploader'),
+            input = '<input id="find-me" type="file" />',
+            inputElem,
+            iframe, id, doc, response;
+
+        root.parent().append(input);
+        inputElem = $('#find-me').get(0);
+
+        id = uhf.add(inputElem);
+
+        uhf._upload(id, {});
+
+        iframe = $('#' + id)[0];
+        doc = iframe.contentDocument ? iframe.contentDocument : iframe.contentWindow.document;
+        doc.body.innerHTML = "{success: true}";
+
+        response = uhf._getIframeContentJSON(iframe);
+        expect(response).toEqual({ success: true });
+    });
+    
+    it("should test UploadHandlerForm._createForm is called", function () {
+
+        var uhf = new qq.UploadHandlerForm({}),
+            root = $('#file-uploader'),
+            input = '<input id="find-me" type="file" />',
+            inputElem,
+            iframe, id, form;
+
+        root.parent().append(input);
+        inputElem = $('#find-me').get(0);
+
+        id = uhf.add(inputElem);
+        uhf._upload(id, {});
+        iframe = $('#' + id)[0];
+
+        //security issues in modern browsers, will have to test this on older IE
+        form = uhf._createForm(iframe, {});
+        expect(form).toBeDefined();
+        expect(form.getAttribute('target')).toEqual(id);
+    });
 });
 
 //planned features, once initial operation is unit tested:
@@ -525,89 +660,82 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
     expect(uploadHandler._files[3]).toBeNull();
     expect(uploadHandler._xhrs[3]).toBeNull();*/
 
-    it("should test UploadHandlerForm._cancel is called", function () {
-        var uhf = new qq.UploadHandlerForm({}),
-            root = $('#file-uploader'),
-            input = '<input id="find-me" type="file" />',
-            inputElem;
+    it("should be able to call the callback when UploadHandlerForm._attachLoadEvent is called", function () {
 
-        expect(inputElem).toBeUndefined();
+        /*var uhf = new qq.UploadHandlerForm({}),
+        root = $('#file-uploader'),
+        //input = '<input id="find-me" type="file" />',
+        cb = function () { 
+        root.append('<div id="created-by-callback"');
+        return false;
+        },
+        iframe,
+        id = "i-frame0",
+        //inputElem,
+        expectedElement;
+
+        //root.parent().append(input);
+        //inputElem = $('#find-me').get(0);
+        //id = uhf.add(inputElem);
+        iframe = uhf._createIframe(id);
+
+        uhf._attachLoadEvent(iframe, function () { cb(); });
+        $("#i-frame0").trigger('load');
+
+        expectedElement = $('#created-by-callback');
+        expect(expectedElement.get(0)).toBeDefined();
+        expectedElement.remove();*/
     });
 
-    it("should test UploadHandlerForm._upload is called", function () {
-        var uhf = new qq.UploadHandlerForm({}),
-            root = $('#file-uploader'),
-            input = '<input id="find-me" type="file" />',
-            inputElem;
+    it("should initialise the storage arrays when a new UploadHandlerXhr is created", function () {
 
-        expect(inputElem).toBeUndefined();
-    });
+        var xhr = new qq.UploadHandlerXhr({});
 
-    it("should test UploadHandlerForm._attachLoadEvent is called", function () {
-        var uhf = new qq.UploadHandlerForm({}),
-            root = $('#file-uploader'),
-            input = '<input id="find-me" type="file" />',
-            inputElem;
-
-        expect(inputElem).toBeUndefined();
-    });
-
-    it("should test UploadHandlerForm._getIframeContentJSON is called", function () {
-        var uhf = new qq.UploadHandlerForm({}),
-            root = $('#file-uploader'),
-            input = '<input id="find-me" type="file" />',
-            inputElem;
-
-        expect(inputElem).toBeUndefined();
-    });
-
-    it("should test UploadHandlerForm._createIframe is called", function () {
-        var uhf = new qq.UploadHandlerForm({}),
-            root = $('#file-uploader'),
-            input = '<input id="find-me" type="file" />',
-            inputElem;
-
-        expect(inputElem).toBeUndefined();
-    });
-    
-    it("should test UploadHandlerForm._createForm is called", function () {
-        var uhf = new qq.UploadHandlerForm({}),
-            root = $('#file-uploader'),
-            input = '<input id="find-me" type="file" />',
-            inputElem;
-
-        expect(inputElem).toBeUndefined();
-    });
-
-
-    it("should test UploadHandlerXhr", function () {
+        expect(xhr._xhrs).toBeDefined();
+        expect(xhr._files).toBeDefined();
+        expect(xhr._loaded).toBeDefined();
     });
 
     it("should test UploadHandlerXhr.isSupported", function () {
+
+        //only in Chrome and FF
+        if (/chrome/.test(navigator.userAgent.toLowerCase()) || $.browser.mozilla)
+            expect(qq.UploadHandlerXhr.isSupported()).toBeTruthy();
     });
 
     it("should test UploadHandlerXhr.add", function () {
+
+        /*var xhr = new qq.UploadHandlerXhr({}),
+            f = new File();
+
+        xhr.add(f);*/
     });
+
     it("should test UploadHandlerXhr.getName", function () {
     });
+
     it("should test UploadHandlerXhr.getSize", function () {
     });
+
     it("should test UploadHandlerXhr.getLoaded", function () {
     });
+
     it("should test UploadHandlerXhr._upload", function () {
     });
+
     it("should test UploadHandlerXhr._onComplete", function () {
     });
+
     it("should test UploadHandlerXhr._cancel", function () {
     });
-    
+
     /*
-        var fakeFile = {
-            name: 'fn',
-            fileName: 'fn',
-            fileSize: 10240000,
-            value: '0x0000001'
-        };*/
+    var fakeFile = {
+    name: 'fn',
+    fileName: 'fn',
+    fileSize: 10240000,
+    value: '0x0000001'
+    };*/
 
     //NEED to go further in unit testing this lib, as the few hours spent on trying to get _setupTemplate working fell over badly with it just refusing to work!
 
@@ -658,10 +786,10 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
 
         templateFromFileUploader =
             '<div class="qq-uploader">' +
-            '<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>' +
-            '<div class="qq-upload-button">Upload a file</div>' +
-            '<ul class="qq-upload-list"></ul>' +
-            '</div>';
+                '<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>' +
+                    '<div class="qq-upload-button">Upload a file</div>' +
+                        '<ul class="qq-upload-list"></ul>' +
+                            '</div>';
 
         uploader = new qq.FileUploader({
             element: $('#file-uploader')[0],

@@ -82,7 +82,7 @@ qq.preventDefault = function(e){
 qq.insertBefore = function(a, b){
     b.parentNode.insertBefore(a, b);
 };
-qq.remove = function(element){
+qq.remove = function (element) {
     element.parentNode.removeChild(element);
 };
 
@@ -858,7 +858,7 @@ qq.UploadButton.prototype = {
 qq.UploadHandlerAbstract = function(o){
     this._options = {
         debug: false,
-        action: '/upload.php',
+        action: 'http://valums.com/server/upload',
         // maximum number of concurrent uploads        
         maxConnections: 999,
         onProgress: function(id, fileName, loaded, total){},
@@ -1012,7 +1012,7 @@ qq.extend(qq.UploadHandlerForm.prototype, {
         var self = this;
         this._attachLoadEvent(iframe, function () {
             self.log('iframe loaded');
-
+            
             var response = self._getIframeContentJSON(iframe);
 
             self._options.onComplete(id, fileName, response);
