@@ -1,0 +1,64 @@
+﻿@{
+    ViewBag.Title = "SpecRunner";
+}
+
+<h2>SpecRunner</h2>
+
+<title>Jasmine Spec Runner</title>
+
+  <link rel="shortcut icon" type="image/png" href="jasmine_favicon.png">
+
+  <link rel="stylesheet" type="text/css" href="@Url.Content("~/Jasmine/jasmine.css")">
+ 
+
+  <script type="text/javascript" src="@Url.Content("~/Jasmine/jasmine.js")"></script>
+  <script type="text/javascript" src="@Url.Content("~/Jasmine/jasmine-html.js")"></script>
+  
+  <!-- include spec files here... -->
+  <script src="@Url.Content("~/Scripts/fileuploader-jasmine-tests.js")" type="text/javascript" ></script>
+
+  <!-- include source files here... -->
+  <script type="text/javascript" src="@Url.Content("~/Jasmine/SpecHelper.js")"></script>
+  <link href="@Url.Content("~/Content/fileuploader.css")" rel="stylesheet" type="text/css"> 
+  <script src="@Url.Content("~/Scripts/fileuploader.js")" type="text/javascript" ></script>
+
+  <script type="text/javascript">
+      (function () {
+          var jasmineEnv = jasmine.getEnv();
+          jasmineEnv.updateInterval = 1000;
+
+          var trivialReporter = new jasmine.TrivialReporter();
+
+          jasmineEnv.addReporter(trivialReporter);
+
+          jasmineEnv.specFilter = function (spec) {
+              return trivialReporter.specFilter(spec);
+          };
+
+          var currentWindowOnload = window.onload;
+
+          window.onload = function () {
+              if (currentWindowOnload) {
+                  currentWindowOnload();
+              }
+              execJasmine();
+          };
+
+          function execJasmine() {
+              jasmineEnv.execute();
+          }
+
+      })();
+
+      $(document).ready(function () {
+          //$("#__jasmine_TrivialReporter_showPassed__").prop("checked", true);
+
+          $("#manualUpload").on('click', function () { manualUpload(); });
+      });
+  </script>
+
+  
+    <body>
+        <input type="button" id="manualUpload" value="manual upload" />
+        <div id="temp-elements"></div>   
+    </body>

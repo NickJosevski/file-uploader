@@ -6,10 +6,13 @@ var clp = function (prefix, d) {
 };
 
 var dd = dd || {};
+var isChromeOrFirefox = (/chrome/.test(navigator.userAgent.toLowerCase()) || $.browser.mozilla);
 
 describe("file-upload", function () {
     return;
-    var uploader, templateFromFileUploader;
+    var uploader,
+        templateFromFileUploader,
+        BlobBuilder = window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder;
 
     beforeEach(function () {
         var temp = $("#temp-elements");
@@ -635,6 +638,129 @@ describe("file-upload", function () {
         expect(form).toBeDefined();
         expect(form.getAttribute('target')).toEqual(id);
     });
+
+    it("should initialise the storage arrays when a new UploadHandlerXhr is created", function () {
+
+        var xhr = new qq.UploadHandlerXhr({});
+
+        expect(xhr._xhrs).toBeDefined();
+        expect(xhr._files).toBeDefined();
+        expect(xhr._loaded).toBeDefined();
+    });
+
+    it("should test UploadHandlerXhr.isSupported", function () {
+
+        if (!isChromeOrFirefox) {
+            return;
+        }
+
+        expect(qq.UploadHandlerXhr.isSupported()).toBeTruthy();
+    });
+
+    it("should be able to take add a File (or superclass Blob) to the _files list when UploadHandlerXhr.add", function () {
+
+        if (!isChromeOrFirefox) {
+            return;
+        }
+
+        var blob,
+            bb = new BlobBuilder(),
+            xhr = new window.XMLHttpRequest(),
+            uphxhr = new qq.UploadHandlerXhr({});
+
+        xhr.open('GET', 'jasmine_favicon.png', true);
+        xhr.responseType = 'arraybuffer';
+        bb.append(this.response); // Note: not xhr.responseText
+        blob = bb.getBlob('image/png');
+
+        uphxhr.add(blob);
+        expect(uphxhr._files.length).toEqual(1);
+    });
+
+    it("should be able to return the fileName property on the File object via UploadHandlerXhr.getName", function () {
+        if (!isChromeOrFirefox) {
+            return;
+        }
+
+        var blob,
+            bb = new BlobBuilder(),
+            xhr = new window.XMLHttpRequest(),
+            uphxhr = new qq.UploadHandlerXhr({}),
+            resultFileName,
+            fileAtIndex = 0;
+
+
+        xhr.open('GET', 'jasmine_favicon.png', true);
+        xhr.responseType = 'arraybuffer';
+        bb.append(this.response); // Note: not xhr.responseText
+        blob = bb.getBlob('image/png');
+        blob.fileName = 'filename.txt';
+        uphxhr.add(blob);
+        resultFileName = uphxhr.getName(fileAtIndex);
+
+        expect(resultFileName).toEqual('filename.txt');
+    });
+
+    it("should be able to return the fileSize property on the File object via UploadHandlerXhr.getSize", function () {
+        if (!isChromeOrFirefox) {
+            return;
+        }
+
+        var blob,
+            bb = new BlobBuilder(),
+            xhr = new window.XMLHttpRequest(),
+            uphxhr = new qq.UploadHandlerXhr({}),
+            resultFileSize,
+            fileAtIndex = 0;
+
+
+        xhr.open('GET', 'jasmine_favicon.png', true);
+        xhr.responseType = 'arraybuffer';
+        bb.append(this.response); // Note: not xhr.responseText
+        blob = bb.getBlob('image/png');
+        blob.fileSize = 10240000;
+        uphxhr.add(blob);
+        resultFileSize = uphxhr.getSize(fileAtIndex);
+
+        expect(resultFileSize).toEqual(10240000);
+    });
+
+    it("should upload the file that is fed in via BlobBuild when UploadHandlerXhr._upload is called", function () {
+
+        //NOTE: see below for some important info about getting this test to work
+        //      Also that this test will not work as a file:/// specrunner in Chrome or Firefox, it must be run as an application (hosted site)
+        if (!isChromeOrFirefox) {
+            return;
+        }
+
+        var blob,
+            bb = new BlobBuilder(),
+            xhr = new window.XMLHttpRequest(),
+            uphxhr = new qq.UploadHandlerXhr({});
+
+        xhr.open('GET', 'jasmine_favicon.png', true);
+        xhr.responseType = 'arraybuffer';
+        bb.append(this.response); // Note: not xhr.responseText
+        blob = bb.getBlob('image/png');
+
+        uphxhr.add(blob);
+        uphxhr._options.action = '/upload/UploadFile';
+        blob.fileName = 'uploadthis' + (new Date()).getTime() + '.png';
+        blob.fileSize = 9;
+        /*  The below line, exists in _upload, but gets in the way in Chrome during dev, for unit tests
+        xhr.setRequestHeader("Access-Control-Allow-Origin: *", "XMLHttpRequest");
+        it must be commented out
+        */
+        uphxhr._upload(0, {});
+        expect(uphxhr._files.length).toEqual(1);
+    });
+
+    it("should return 0 when UploadHandlerXhr.getLoaded is called and there is no entries yet", function () {
+
+        var uphxhr = new qq.UploadHandlerXhr({});
+
+        expect(uphxhr.getLoaded(0)).toEqual(0);
+    });
 });
 
 //planned features, once initial operation is unit tested:
@@ -646,7 +772,9 @@ describe("file-upload", function () {
 
 
 describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
-    var uploader, templateFromFileUploader;
+    var uploader,
+        templateFromFileUploader,
+        BlobBuilder = window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder;
 
     /*it("should test qq.UploadDropZone._isValidFileDrag", function () {
     //can't easily test as it requires the dropped file event
@@ -660,82 +788,81 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
     expect(uploadHandler._files[3]).toBeNull();
     expect(uploadHandler._xhrs[3]).toBeNull();*/
 
-    it("should be able to call the callback when UploadHandlerForm._attachLoadEvent is called", function () {
+    /*it("should be able to call the callback when UploadHandlerForm._attachLoadEvent is called", function () {
 
-        /*var uhf = new qq.UploadHandlerForm({}),
-        root = $('#file-uploader'),
-        //input = '<input id="find-me" type="file" />',
-        cb = function () { 
-        root.append('<div id="created-by-callback"');
-        return false;
-        },
-        iframe,
-        id = "i-frame0",
-        //inputElem,
-        expectedElement;
+    var uhf = new qq.UploadHandlerForm({}),
+    root = $('#file-uploader'),
+    input = '<input id="find-me" type="file" />',
+    cb = function () {
+    root.append('<div id="created-by-callback"');
+    return false;
+    },
+    doc,
+    iframe,
+    id = "i-frame0",
+    //inputElem,
+    expectedElement;
 
-        //root.parent().append(input);
-        //inputElem = $('#find-me').get(0);
-        //id = uhf.add(inputElem);
-        iframe = uhf._createIframe(id);
+    root.parent().append(input);
+    //inputElem = $('#find-me').get(0);
+    //id = uhf.add(inputElem);
+    iframe = uhf._createIframe(id);
 
-        uhf._attachLoadEvent(iframe, function () { cb(); });
-        $("#i-frame0").trigger('load');
+    uhf._attachLoadEvent(iframe, cb);
+    //$("#i-frame0").trigger('load');
 
-        expectedElement = $('#created-by-callback');
-        expect(expectedElement.get(0)).toBeDefined();
-        expectedElement.remove();*/
-    });
+    //ARGHHH, cannot for the life of me call .load() or onload, tried so many ways
+    iframe = $("#i-frame0").get(0);
+    //doc = iframe.contentDocument ? iframe.contentDocument : iframe.contentWindow.document;
+    //doc.body.innerHTML = "{success: true}";
+        
 
-    it("should initialise the storage arrays when a new UploadHandlerXhr is created", function () {
+    expectedElement = $('#created-by-callback');
+    expect(expectedElement.get(0)).toBeDefined();
+    expectedElement.remove();
+    });*/
 
-        var xhr = new qq.UploadHandlerXhr({});
-
-        expect(xhr._xhrs).toBeDefined();
-        expect(xhr._files).toBeDefined();
-        expect(xhr._loaded).toBeDefined();
-    });
-
-    it("should test UploadHandlerXhr.isSupported", function () {
-
-        //only in Chrome and FF
-        if (/chrome/.test(navigator.userAgent.toLowerCase()) || $.browser.mozilla)
-            expect(qq.UploadHandlerXhr.isSupported()).toBeTruthy();
-    });
-
-    it("should test UploadHandlerXhr.add", function () {
-
-        /*var xhr = new qq.UploadHandlerXhr({}),
-            f = new File();
-
-        xhr.add(f);*/
-    });
-
-    it("should test UploadHandlerXhr.getName", function () {
-    });
-
-    it("should test UploadHandlerXhr.getSize", function () {
-    });
 
     it("should test UploadHandlerXhr.getLoaded", function () {
-    });
 
-    it("should test UploadHandlerXhr._upload", function () {
+        //NOTE: see below for some important info about getting this test to work
+        //      Also that this test will not work as a file:/// specrunner in Chrome or Firefox, it must be run as an application (hosted site)
+        if (!isChromeOrFirefox) {
+            return;
+        }
+
+        var blob,
+            bb = new BlobBuilder(),
+            xhr = new window.XMLHttpRequest(),
+            uphxhr = new qq.UploadHandlerXhr({});
+
+        xhr.open('GET', 'jasmine_favicon.png', true);
+        xhr.responseType = 'arraybuffer';
+        bb.append(this.response); // Note: not xhr.responseText
+        blob = bb.getBlob('image/png');
+
+        uphxhr.add(blob);
+        uphxhr._options.action = '/upload/UploadFile';
+        blob.fileName = 'uploadthis' + (new Date()).getTime() + '.png';
+        blob.fileSize = 9;
+        /*  The below line, exists in _upload, but gets in the way in Chrome during dev, for unit tests
+        xhr.setRequestHeader("Access-Control-Allow-Origin: *", "XMLHttpRequest");
+        it must be commented out
+        */
+        uphxhr._upload(0, {});
+        cl('here---- \\/');
+        cl(uphxhr._loaded);
+        expect(uphxhr._files.length).toEqual(1);
+        expect(uphxhr.getLoaded(0)).toEqual(blob.fileSize);
     });
 
     it("should test UploadHandlerXhr._onComplete", function () {
+
     });
 
     it("should test UploadHandlerXhr._cancel", function () {
-    });
 
-    /*
-    var fakeFile = {
-    name: 'fn',
-    fileName: 'fn',
-    fileSize: 10240000,
-    value: '0x0000001'
-    };*/
+    });
 
     //NEED to go further in unit testing this lib, as the few hours spent on trying to get _setupTemplate working fell over badly with it just refusing to work!
 
@@ -800,3 +927,73 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
 
     //No after each, here in the in progress so we can debug elements
 });
+
+
+
+function manualUpload() {
+    var uhf = new qq.UploadHandlerForm({}),
+            root = $('#file-uploader'),
+            input = '<input id="find-me" type="file" />',
+            cb = function () {
+                cl('calll me - holla!');
+                root.append('<div id="created-by-callback"');
+                return false;
+            },
+            iframe,
+            doc,
+            id = "i-frame0",
+    //inputElem,
+            expectedElement;
+
+    root.parent().append(input);
+    //inputElem = $('#find-me').get(0);
+    //id = uhf.add(inputElem);
+    iframe = uhf._createIframe(id);
+
+    uhf._attachLoadEvent(iframe, cb);
+    
+    cl($("#i-frame0")[0]);
+    cl('about to trigger load...');
+    //$("#i-frame0")[0].load();
+    //$("#i-frame0")[0].load.apply()
+    //($("#i-frame0").get(0))["load"].call();
+    //($("#i-frame0").get(0))["onload"].call();
+    //($("#i-frame0").get(0)).load.call();
+    
+    iframe = $("#i-frame0").get(0);
+    doc = iframe.contentDocument ? iframe.contentDocument : iframe.contentWindow.document;
+    doc = "{ success: true }";
+
+    
+    expectedElement = $('#created-by-callback');
+    expect(expectedElement.get(0)).toBeDefined();
+    cl('blaaaa');
+    cl(expectedElement.get(0));
+    expectedElement.remove();
+};
+    
+function blablabla() {
+    var BlobBuilder = window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder;
+
+    var bb = new BlobBuilder();
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'http://jsfiddle.net/img/logo.png', true);
+
+    xhr.responseType = 'arraybuffer';
+
+    bb.append(this.response); // Note: not xhr.responseText
+
+    var blob = bb.getBlob('image/png');
+
+    var queryString = '/upload/UploadFile?logo-up.png';
+
+    xhr = new XMLHttpRequest();
+    xhr.open("POST", queryString, true);
+
+    //xhr.setRequestHeader("Access-Control-Allow-Origin: *", "XMLHttpRequest");
+    xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+    xhr.setRequestHeader("X-File-Name", encodeURIComponent('logo-' + (new Date()).getTime() + '.png'));
+    xhr.setRequestHeader("Content-Type", "application/octet-stream");
+    xhr.send(blob);
+};

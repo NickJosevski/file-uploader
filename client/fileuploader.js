@@ -1012,7 +1012,7 @@ qq.extend(qq.UploadHandlerForm.prototype, {
         var self = this;
         this._attachLoadEvent(iframe, function () {
             self.log('iframe loaded');
-            
+
             var response = self._getIframeContentJSON(iframe);
 
             self._options.onComplete(id, fileName, response);
@@ -1031,7 +1031,10 @@ qq.extend(qq.UploadHandlerForm.prototype, {
         return id;
     },
     _attachLoadEvent: function (iframe, callback) {
+        cl('inside _attachLoadEvent....');
+        
         qq.attach(iframe, 'load', function () {
+            cl('inside _attachLoadEvent, load was called....');
             // when we remove iframe from dom
             // the request stops, but in IE load
             // event fires
@@ -1148,7 +1151,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
     * Returns id to use with upload, cancel
     **/
     add: function (file) {
-        if (!(file instanceof File)) {
+        if (!(file instanceof File) && !(file instanceof Blob)) {
             throw new Error('Passed obj in not a File (in qq.UploadHandlerXhr)');
         }
 
@@ -1167,6 +1170,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
     * Returns uploaded bytes for file identified by id 
     */
     getLoaded: function (id) {
+        clp('insideGL', this._loaded[id]);
         return this._loaded[id] || 0;
     },
     /**
@@ -1187,6 +1191,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
         xhr.upload.onprogress = function (e) {
             if (e.lengthComputable) {
                 self._loaded[id] = e.loaded;
+                clp('lengthComputable', self._loaded[id]);
                 self._options.onProgress(id, name, e.loaded, e.total);
             }
         };
@@ -1200,10 +1205,11 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
         // build query string
         params = params || {};
         params['qqfile'] = name;
-        var queryString = qq.obj2url(params, this._options.action);
 
+        var queryString = qq.obj2url(params, this._options.action);
+        cl(queryString);
         xhr.open("POST", queryString, true);
-        xhr.setRequestHeader("Access-Control-Allow-Origin: *", "XMLHttpRequest");
+        //xhr.setRequestHeader("Access-Control-Allow-Origin: *", "XMLHttpRequest");
         xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
         xhr.setRequestHeader("X-File-Name", encodeURIComponent(name));
         xhr.setRequestHeader("Content-Type", "application/octet-stream");
@@ -1241,9 +1247,9 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
         this._dequeue(id);
     },
     _cancel: function (id) {
-        console.log('CC'+_files);
+        console.log('CC' + _files);
         this._options.onCancel(id, this.getName(id));
-        
+
         this._files[id] = null;
 
         if (this._xhrs[id]) {

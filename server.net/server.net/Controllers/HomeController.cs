@@ -28,5 +28,10 @@ namespace server.net.Controllers
 
             return View();
         }
+
+        public ActionResult SpecRunner()
+        {
+            return View();
+        }
     }
 }
