@@ -6,4 +6,5 @@ Thumbs.db
 *.user
 *.suo
 *.cache
+UploadedFiles/
 _ReSharper.*
