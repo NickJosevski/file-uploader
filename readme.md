@@ -1,5 +1,14 @@
 [donation_link]: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=3PMY37SL9L888&lc=US&item_name=JavaScript%20file%20uploader&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHosted
 
+* * * 
+
+## Fork Note:
+  The objective of the fork was to introduce unit tests via jasmine around the very useful fileuploader. These Unit Tests were to give confidence in expanding the uploader with some newer features. 
+
+### Original ReadMe Follows:
+  
+* * *
+
 This plugin uses XHR for uploading multiple files with progress-bar in FF3.6+, Safari4+,
 Chrome and falls back to hidden iframe based upload in other browsers,
 providing good user experience everywhere.
