@@ -13,6 +13,8 @@
 
 var qq = qq || {};
 
+window.$qq = qq;
+
 /**
 * Adds all missing properties from second obj to first obj
 */
@@ -284,13 +286,6 @@ qq.FileUploaderBasic = function (o) {
     // number of files being uploaded
     this._filesInProgress = 0;
     this.repeatableSetupForButton();
-    /*this._handler = this._createUploadHandler();
-
-    if (this._options.button) {
-        this._button = this._createUploadButton(this._options.button);
-    }
-
-    this._preventLeaveInProgress();*/
 };
 
 qq.FileUploaderBasic.prototype = {
@@ -489,13 +484,15 @@ qq.FileUploader = function (o) {
     // additional options    
     qq.extend(this._options, {
         element: null,
+        jqElementId: '',
+        jqExternalElementId: '',
         // if set, will be used instead of qq-upload-list in template
         listElement: null,
-
+        
         template: '<div class="qq-uploader">' +
                 '<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>' +
                 '<div class="qq-upload-button">Upload a file</div>' +
-                '<ul class="qq-upload-list"></ul>' +
+                '<ul id="qq-upload-list" class="qq-upload-list"></ul>' +
              '</div>',
 
         // template for one item in file list
@@ -534,7 +531,6 @@ qq.FileUploader = function (o) {
 
     this._classes = this._options.classes;
 
-
     this._bindCancelEvent();
     this._setupDragDrop();
 };
@@ -551,17 +547,22 @@ qq.extend(qq.FileUploader.prototype, {
 
         qq.FileUploaderBasic.prototype.repeatableSetupForButton.apply(this, arguments);
     },
-    extractOutInProgress: function (externalList) {
-        var list = $('#file-uploader').find('.qq-upload-list');
-        list.children().each(function () {
+    extractOutInProgress: function () {
+        var externalList = this._jqListExternalElement;
+
+        this._jqListElement.children().each(function () {
             if ($(this).data("status") === "in-progress") {
                 externalList.append($(this));
             }
         });
     },
     _repeatableSetup: function () {
-        this._element.innerHTML = this._options.template;
+        this._jqElement = $('#' + this._options.jqElementId);
+        this._jqExternalElement = $('#' + this._options.jqExternalElementId);
+        this._jqElement.html(this._options.template);
         this._button = this._createUploadButton(this._find(this._element, 'button'));
+        this._jqListElement = $('#' + this._options.classes.list);
+        this._jqListExternalElement = this._jqExternalElement.find("ul");
     },
     /**
     * Gets one of the elements listed in this._options.classes
@@ -574,9 +575,9 @@ qq.extend(qq.FileUploader.prototype, {
 
         return element;
     },
-    _moveToExternalList: function (id, externalList) {
-        var elem = $('#file-uploader').find("[data-id='" + id + "']");
-        externalList.append(elem)
+    _moveToExternalList: function (id) {
+        var elem = this._jqElement.find("[data-id='" + id + "']");
+        this._jqListExternalElement.append(elem)
     },
     _setupDragDrop: function () {
         var self = this,
@@ -668,22 +669,13 @@ qq.extend(qq.FileUploader.prototype, {
     },
     _getItemByFileId: function (id) {
         //TODO: original idea was to switch on a '_stillOnSamePage' flag
-        //TODO: replace #file-uploader, and #on-going-uploads with root variables
-        //hard coded for now
-        var item = $('#file-uploader').find("[data-id='" + id + "']");
-        if (item.length == 0) {
+        var item = this._jqElement.find("[data-id='" + id + "']");
+
+        if (item.length === 0) {
             //check alternate out of page area
-            item = $("#on-going-uploads").find("[data-id='" + id + "']");
+            item = this._jqExternalElement.find("[data-id='" + id + "']");
         }
         return item.get(0);
-        /*var item = this._listElement.firstChild;
-
-        // there can't be txt nodes in dynamically created list
-        // and we can  use nextSibling
-        while (item) {
-        if (item.qqFileId == id) return item;
-        item = item.nextSibling;
-        }*/
     },
     /**
     * delegate click event for cancel link 

@@ -12,6 +12,8 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
     //return;
     var uploader,
         templateFromFileUploader,
+        ongoingUploads,
+        externalList,
         BlobBuilder = window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder;
 
     beforeEach(function () {
@@ -20,16 +22,22 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
             $('<div id="dialog" title="Basic dialog">')
                 .append($('<div id="file-uploader"></div>'))
         );
+        
+        ongoingUploads = $('<div id="on-going-uploads">-On Going-</div>');
+        $("body").append(ongoingUploads);
+        externalList = ongoingUploads.append('<ul>');
 
         templateFromFileUploader =
             '<div class="qq-uploader">' +
             '<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>' +
             '<div class="qq-upload-button">Upload a file</div>' +
-            '<ul class="qq-upload-list"></ul>' +
+            '<ul id="qq-upload-list" class="qq-upload-list"></ul>' +
             '</div>';
 
         uploader = new qq.FileUploader({
             element: $('#file-uploader')[0],
+            jqElementId: 'file-uploader',
+            jqExternalElementId: 'on-going-uploads',
             action: '/upload/UploadFile',
             debug: true
         });
@@ -37,6 +45,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
 
     afterEach(function () {
         $("#temp-elements").empty();
+        $("#on-going-uploads").remove();
     });
 
     it("should have created a new uploader", function () {
@@ -979,7 +988,6 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
         expect(fileInput.css('font-size')).toEqual('118px');
     });
 
-
     it("should have data-status attribute as 'upload-complete' on upload reporter on success", function () {
 
         var expected = 'upload-complete',
@@ -1017,10 +1025,6 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
         uploader._addToList(id, 'i.will.have.moved');
         inProgress = $('#file-uploader').find("[data-id='" + id + "']");
 
-        //this will belong to another page that houses the upload area
-        $("body").append(ongoingUploads);
-        ongoingUploads.append('<ul>').append(inProgress);
-
         result = uploader._getItemByFileId(id);
         expect(result).toBeDefined();
         expect(inProgress.data('status')).toEqual('in-progress');
@@ -1034,7 +1038,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
             name = 'i.should.move';
 
         uploader._addToList(id, name);
-        externalList = ongoingUploads.append('<ul>');
+        externalList = ongoingUploads.find('ul');
 
         uploader._moveToExternalList(id, externalList);
 
@@ -1051,7 +1055,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
 
         uploader._addToList(id, name);
 
-        uploader._moveToExternalList(id, externalList);
+        uploader._moveToExternalList(id);
 
         result = $('#on-going-uploads').find("[data-id='" + id + "']");
 
@@ -1066,7 +1070,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
 
         uploader._addToList(id, name);
 
-        uploader.extractOutInProgress(externalList);
+        uploader.extractOutInProgress();
 
         result = $('#on-going-uploads').find("[data-id='" + id + "']");
 
@@ -1090,11 +1094,13 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
             '<div class="qq-uploader">' +
             '<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>' +
             '<div class="qq-upload-button">Upload a file</div>' +
-            '<ul class="qq-upload-list"></ul>' +
+            '<ul id="qq-upload-list" class="qq-upload-list"></ul>' +
             '</div>';
 
         uploader = new qq.FileUploader({
             element: $('#file-uploader')[0],
+            jqElementId: 'file-uploader',
+            jqExternalElementId: 'on-going-uploads',
             action: '/upload/UploadFile',
             debug: true
         });
@@ -1113,6 +1119,9 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
 // - can track status of uploads easiers with a data attributed
 //      > Achieved via the data-status being set via _onComplete()
 // - use jQuery instead of pure javascript, then we diverge and can't really support taking new patches from original creators, or sending stuff back to them...
+//      > Starting, with the introduction of duplicate core variables
+//      > _jq prefixed elements are jQuery() elems and can be manipulated as such
+//      > while the rest of the variables can slowly be ported accross.
 // - solve the issue in Chrome about the drag div not dissapearing
 // - introduce the better hover mechanism from the custom one I adjusted
 // - can re-seed itself from past values (if page was navigated away)
@@ -1146,11 +1155,13 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
             '<div class="qq-uploader">' +
             '<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>' +
             '<div class="qq-upload-button">Upload a file</div>' +
-            '<ul class="qq-upload-list"></ul>' +
+            '<ul id="qq-upload-list" class="qq-upload-list"></ul>' +
             '</div>';
 
         uploader = new qq.FileUploader({
             element: $('#file-uploader')[0],
+            jqElementId: 'file-uploader',
+            jqExternalElementId: 'on-going-uploads',
             action: '/upload/UploadFile',
             debug: true
         });
@@ -1166,6 +1177,8 @@ function manualAction() {
     return;
     var uploader = new qq.FileUploader({
         element: $('#file-uploader')[0],
+        jqElementId: 'file-uploader',
+        jqExternalElementId: 'on-going-uploads',
         action: '/upload/UploadFile',
         debug: true
     });
