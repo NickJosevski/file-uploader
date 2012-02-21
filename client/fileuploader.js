@@ -551,6 +551,9 @@ qq.extend(qq.FileUploader.prototype, {
 
         qq.FileUploaderBasic.prototype.repeatableSetupForButton.apply(this, arguments);
     },
+    extractOutInProgress: function () {
+
+    },
     _repeatableSetup: function () {
         this._element.innerHTML = this._options.template;
         this._button = this._createUploadButton(this._find(this._element, 'button'));
@@ -636,13 +639,16 @@ qq.extend(qq.FileUploader.prototype, {
 
         if (result.success) {
             qq.addClass(item, this._classes.success);
+            item.setAttribute('data-status', 'upload-complete');
         } else {
             qq.addClass(item, this._classes.fail);
+            item.setAttribute('data-status', 'upload-failed');
         }
     },
     _addToList: function (id, fileName) {
         var item = qq.toElement(this._options.fileTemplate);
         item.qqFileId = id;
+        item.setAttribute('data-id', id);
 
         var fileElement = this._find(item, 'file');
         qq.setText(fileElement, this._formatFileName(fileName));
@@ -651,14 +657,22 @@ qq.extend(qq.FileUploader.prototype, {
         this._listElement.appendChild(item);
     },
     _getItemByFileId: function (id) {
-        var item = this._listElement.firstChild;
+        //TODO: replace #file-uploader, and #on-going-uploads with root variables
+        //hard coded for now
+        var item = $('#file-uploader').find("[data-id='" + id + "']");
+        if (item.length == 0) {
+            //check alternate out of page area
+            item = $("#on-going-uploads").find("[data-id='" + id + "']");
+        }
+        return item.get(0);
+        /*var item = this._listElement.firstChild;
 
         // there can't be txt nodes in dynamically created list
         // and we can  use nextSibling
         while (item) {
-            if (item.qqFileId == id) return item;
-            item = item.nextSibling;
-        }
+        if (item.qqFileId == id) return item;
+        item = item.nextSibling;
+        }*/
     },
     /**
     * delegate click event for cancel link 

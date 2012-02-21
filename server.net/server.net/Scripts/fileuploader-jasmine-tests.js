@@ -940,8 +940,106 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
     });
 });
 
+describe("modifictions (expansion) to the fileuploader lib", function () {
+    var uploader,
+        templateFromFileUploader,
+        BlobBuilder = window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder;
+
+
+    //NOTE: This test cannot be active yet, as the fileuploader.js must remain unmodified for now, until enough tests can be created, 
+    //the section that defines this in fileuploader.js can be uncommented at that point too
+
+    //need a test for the re-creation re-init of the uploader, the setup of that button
+    /*it("should work", function () {
+    });*/
+    it("should re-setup the drop area and upload button when setupTemplate() is called", function () {
+
+        //clear our the setup as if we're coming back to the same page via ajax, and uploader is not gettin re-created
+        $('#file-uploader').empty();
+
+        uploader.setupForReturnToPage();
+
+        var fileInput = $('#file-uploader').find(":input:file");
+        var buttons = $('#file-uploader').find(".qq-upload-button");
+        var dropArea = $('#file-uploader').find(".qq-upload-drop-area");
+        var dropAreaText = dropArea.children(":first-child");
+
+        expect(fileInput.length).toEqual(1);
+        expect(buttons.length).toEqual(1);
+        expect(dropArea.length).toEqual(1);
+        expect(dropAreaText.html()).toEqual("Drop files here to upload");
+
+        expect(buttons.css('position')).toEqual('relative');
+        expect(buttons.css('direction')).toEqual('ltr');
+
+        expect(fileInput.css('position')).toEqual('absolute');
+        expect(fileInput.css('cursor')).toEqual('pointer');
+        expect(fileInput.css('font-size')).toEqual('118px');
+    });
+
+
+    it("should have data-status attribute as 'upload-complete' on upload reporter on success", function () {
+
+        var expected = 'upload-complete',
+            list,
+            id = 1000;
+
+        uploader._addToList(id, 'file.name');
+        uploader._onComplete(id, 'file.name', { success: true });
+
+        list = $('#file-uploader').find("[data-id='" + id + "']");
+
+        expect(list.data('status')).toEqual(expected);
+    });
+
+    it("should have data-status attribute as 'upload-failed' on upload reporter on a failure", function () {
+
+        var expected = 'upload-failed',
+            list,
+            id = 1000;
+
+        uploader._addToList(id, 'file.name');
+        uploader._onComplete(id, 'file.name', { success: false });
+
+        list = $('#file-uploader').find("[data-id='" + id + "']");
+
+        expect(list.data('status')).toEqual(expected);
+    });
+
+    beforeEach(function () {
+
+        var temp = $("#temp-elements");
+        temp.append(
+            $('<div id="dialog" title="Basic dialog">')
+                .append($('<div id="file-uploader"></div>'))
+        );
+
+        templateFromFileUploader =
+            '<div class="qq-uploader">' +
+            '<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>' +
+            '<div class="qq-upload-button">Upload a file</div>' +
+            '<ul class="qq-upload-list"></ul>' +
+            '</div>';
+
+        uploader = new qq.FileUploader({
+            element: $('#file-uploader')[0],
+            action: '/upload/UploadFile',
+            debug: true
+        });
+    });
+
+    afterEach(function () {
+        $("#temp-elements").empty();
+    });
+});
+
+
+
 //planned features, once initial operation is unit tested:
 // - can re-set itself correctly when page navigated away but in scope still attempting via SetupTemplate()
+//      > Achieved via setupForReturnToPage, and some refactoring to move construction logic into new methods
+// - can track status of uploads easiers with a data attributed
+//      > Achieved via the data-status being set via _onComplete()
 // - use jQuery instead of pure javascript, then we diverge and can't really support taking new patches from original creators, or sending stuff back to them...
 // - solve the issue in Chrome about the drag div not dissapearing
 // - introduce the better hover mechanism from the custom one I adjusted
@@ -950,14 +1048,30 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
 
 describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
     var uploader,
+        ongoingUploads = $("body").append('<div id="on-going-uploads"></div>'),
         templateFromFileUploader,
         BlobBuilder = window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder;
 
     //simply add a return to the top of the above describe bloce above, 
     //and use this one where less tests will run and no after test event is set up
 
+    it("should have data-status attribute as 'upload-complete' on upload reporter on success", function () {
+
+        var expected = 'upload-complete',
+            list,
+            id = 1000;
+
+        uploader._addToList(id, 'file.name');
+        uploader._onComplete(id, 'file.name', { success: true });
+
+        list = $('#file-uploader').find("[data-id='" + id + "']");
+
+        expect(list.data('status')).toEqual(expected);
+    });
+
     beforeEach(function () {
         var temp = $("#temp-elements");
+
         temp.append(
             $('<div id="dialog" title="Basic dialog">')
                 .append($('<div id="file-uploader"></div>'))
@@ -992,65 +1106,4 @@ function manualAction() {
     });
 
     //--
-    
-
 };
-
-describe("modifictions (expansion) to the fileuploader lib", function () {
-    var uploader,
-        templateFromFileUploader,
-        BlobBuilder = window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder;
-
-
-    //NOTE: This test cannot be active yet, as the fileuploader.js must remain unmodified for now, until enough tests can be created, 
-    //the section that defines this in fileuploader.js can be uncommented at that point too
-
-    //need a test for the re-creation re-init of the uploader, the setup of that button
-    /*it("should work", function () {
-    });*/
-    it("should re-setup the drop area and upload button when setupTemplate() is called", function() {
-
-        //clear our the setup as if we're coming back to the same page via ajax, and uploader is not gettin re-created
-        $('#file-uploader').empty();
-        
-        uploader.setupForReturnToPage();
-
-        var fileInput = $('#file-uploader').find(":input:file");
-        var buttons = $('#file-uploader').find(".qq-upload-button");
-        var dropArea = $('#file-uploader').find(".qq-upload-drop-area");
-        var dropAreaText = dropArea.children(":first-child");
-
-        expect(fileInput.length).toEqual(1);
-        expect(buttons.length).toEqual(1);
-        expect(dropArea.length).toEqual(1);
-        expect(dropAreaText.html()).toEqual("Drop files here to upload");
-
-        expect(buttons.css('position')).toEqual('relative');
-        expect(buttons.css('direction')).toEqual('ltr');
-        
-        expect(fileInput.css('position')).toEqual('absolute');
-        expect(fileInput.css('cursor')).toEqual('pointer');
-        expect(fileInput.css('font-size')).toEqual('118px');
-    });
-
-    beforeEach(function () {
-        var temp = $("#temp-elements");
-        temp.append(
-            $('<div id="dialog" title="Basic dialog">')
-                .append($('<div id="file-uploader"></div>'))
-        );
-
-        templateFromFileUploader =
-            '<div class="qq-uploader">' +
-            '<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>' +
-            '<div class="qq-upload-button">Upload a file</div>' +
-            '<ul class="qq-upload-list"></ul>' +
-            '</div>';
-
-        uploader = new qq.FileUploader({
-            element: $('#file-uploader')[0],
-            action: '/upload/UploadFile',
-            debug: true
-        });
-    });
-});
