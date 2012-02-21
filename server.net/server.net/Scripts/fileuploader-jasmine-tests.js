@@ -942,6 +942,8 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
 
 describe("modifictions (expansion) to the fileuploader lib", function () {
     var uploader,
+        ongoingUploads,
+        externalList,
         templateFromFileUploader,
         BlobBuilder = window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder;
 
@@ -1005,6 +1007,72 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
 
         expect(list.data('status')).toEqual(expected);
     });
+    
+    it("should be able return an item either from standard location, or toast area when _getItemByFileId is called.", function () {
+        var id = 1888,
+            result,
+            children,
+            inProgress;
+
+        uploader._addToList(id, 'i.will.have.moved');
+        inProgress = $('#file-uploader').find("[data-id='" + id + "']");
+
+        //this will belong to another page that houses the upload area
+        $("body").append(ongoingUploads);
+        ongoingUploads.append('<ul>').append(inProgress);
+
+        result = uploader._getItemByFileId(id);
+        expect(result).toBeDefined();
+        expect(inProgress.data('status')).toEqual('in-progress');
+        children = qq.children(result);
+        expect(children.length).toEqual(5/*4 spans and a link for in progress*/);
+    });
+    
+    it("should be able relocate an item to a new list when _moveToExtenralList is called.", function () {
+        var id = 1900,
+            result,
+            name = 'i.should.move';
+
+        uploader._addToList(id, name);
+        externalList = ongoingUploads.append('<ul>');
+
+        uploader._moveToExternalList(id, externalList);
+
+        result = $('#on-going-uploads').find("[data-id='" + id + "']");
+
+        expect(result.get(0)).toBeDefined();
+        expect(result.find('.qq-upload-file').html()).toEqual(name);
+    });
+    
+    it("should be able relocate an item to a new list when _moveToExtenralList is called.", function () {
+        var id = 1900,
+            result,
+            name = 'i.should.move';
+
+        uploader._addToList(id, name);
+
+        uploader._moveToExternalList(id, externalList);
+
+        result = $('#on-going-uploads').find("[data-id='" + id + "']");
+
+        expect(result.get(0)).toBeDefined();
+        expect(result.find('.qq-upload-file').html()).toEqual(name);
+    });
+    
+    it("should extract only in progress items when FileUploader.extractOutInProgress is called.", function () {
+        var id = 1900,
+            result,
+            name = 'i.should.move';
+
+        uploader._addToList(id, name);
+
+        uploader.extractOutInProgress(externalList);
+
+        result = $('#on-going-uploads').find("[data-id='" + id + "']");
+
+        expect(result.get(0)).toBeDefined();
+        expect(result.find('.qq-upload-file').html()).toEqual(name);
+    });
 
     beforeEach(function () {
 
@@ -1013,6 +1081,10 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
             $('<div id="dialog" title="Basic dialog">')
                 .append($('<div id="file-uploader"></div>'))
         );
+        
+        ongoingUploads = $('<div id="on-going-uploads">-On Going-</div>');
+        $("body").append(ongoingUploads);
+        externalList = ongoingUploads.append('<ul>');
 
         templateFromFileUploader =
             '<div class="qq-uploader">' +
@@ -1030,9 +1102,9 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
 
     afterEach(function () {
         $("#temp-elements").empty();
+        $("#on-going-uploads").remove();
     });
 });
-
 
 
 //planned features, once initial operation is unit tested:
@@ -1048,29 +1120,22 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
 
 describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
     var uploader,
-        ongoingUploads = $("body").append('<div id="on-going-uploads"></div>'),
+        ongoingUploads,
+        externalList,
         templateFromFileUploader,
         BlobBuilder = window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder;
 
-    //simply add a return to the top of the above describe bloce above, 
+    //simply add a return to the top of the above describe block above, 
     //and use this one where less tests will run and no after test event is set up
 
-    it("should have data-status attribute as 'upload-complete' on upload reporter on success", function () {
 
-        var expected = 'upload-complete',
-            list,
-            id = 1000;
-
-        uploader._addToList(id, 'file.name');
-        uploader._onComplete(id, 'file.name', { success: true });
-
-        list = $('#file-uploader').find("[data-id='" + id + "']");
-
-        expect(list.data('status')).toEqual(expected);
-    });
-
+    
     beforeEach(function () {
         var temp = $("#temp-elements");
+
+        ongoingUploads = $('<div id="on-going-uploads">-On Going-</div>');
+        $("body").append(ongoingUploads);
+        externalList = ongoingUploads.append('<ul>');
 
         temp.append(
             $('<div id="dialog" title="Basic dialog">')

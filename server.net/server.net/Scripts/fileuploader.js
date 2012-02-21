@@ -551,8 +551,13 @@ qq.extend(qq.FileUploader.prototype, {
 
         qq.FileUploaderBasic.prototype.repeatableSetupForButton.apply(this, arguments);
     },
-    extractOutInProgress: function () {
-
+    extractOutInProgress: function (externalList) {
+        var list = $('#file-uploader').find('.qq-upload-list');
+        list.children().each(function () {
+            if ($(this).data("status") === "in-progress") {
+                externalList.append($(this));
+            }
+        });
     },
     _repeatableSetup: function () {
         this._element.innerHTML = this._options.template;
@@ -568,6 +573,10 @@ qq.extend(qq.FileUploader.prototype, {
         }
 
         return element;
+    },
+    _moveToExternalList: function (id, externalList) {
+        var elem = $('#file-uploader').find("[data-id='" + id + "']");
+        externalList.append(elem)
     },
     _setupDragDrop: function () {
         var self = this,
@@ -649,6 +658,7 @@ qq.extend(qq.FileUploader.prototype, {
         var item = qq.toElement(this._options.fileTemplate);
         item.qqFileId = id;
         item.setAttribute('data-id', id);
+        item.setAttribute('data-status', 'in-progress');
 
         var fileElement = this._find(item, 'file');
         qq.setText(fileElement, this._formatFileName(fileName));
@@ -657,21 +667,23 @@ qq.extend(qq.FileUploader.prototype, {
         this._listElement.appendChild(item);
     },
     _getItemByFileId: function (id) {
+        //TODO: original idea was to switch on a '_stillOnSamePage' flag
+        //TODO: replace #file-uploader, and #on-going-uploads with root variables
         //hard coded for now
-        /*var item = $('#file-uploader').find("[data-id='" + id + "']");
+        var item = $('#file-uploader').find("[data-id='" + id + "']");
         if (item.length == 0) {
             //check alternate out of page area
-            item $("#on-going-uploads").find("[data-id='" + id + "']");
-        }*/
-
-        var item = this._listElement  .firstChild;
+            item = $("#on-going-uploads").find("[data-id='" + id + "']");
+        }
+        return item.get(0);
+        /*var item = this._listElement.firstChild;
 
         // there can't be txt nodes in dynamically created list
         // and we can  use nextSibling
         while (item) {
         if (item.qqFileId == id) return item;
         item = item.nextSibling;
-        }
+        }*/
     },
     /**
     * delegate click event for cancel link 
