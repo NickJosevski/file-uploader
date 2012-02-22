@@ -381,6 +381,8 @@ qq.FileUploaderBasic.prototype = {
         this._button.reset();
     },
     _uploadFileList: function (files) {
+        var id,
+            allIds = [];
         for (var i = 0; i < files.length; i++) {
             if (!this._validateFile(files[i])) {
                 return;
@@ -388,8 +390,10 @@ qq.FileUploaderBasic.prototype = {
         }
 
         for (var i = 0; i < files.length; i++) {
-            this._uploadFile(files[i]);
+            id = this._uploadFile(files[i]);
+            allIds.push(id);
         }
+        return allIds.reverse();
     },
     _uploadFile: function (fileContainer) {
         var id = this._handler.add(fileContainer);
@@ -399,6 +403,7 @@ qq.FileUploaderBasic.prototype = {
             this._onSubmit(id, fileName);
             this._handler.upload(id, this._options.params);
         }
+        return id;
     },
     _validateFile: function (file) {
         var name, size;
@@ -643,16 +648,17 @@ qq.extend(qq.FileUploader.prototype, {
         qq.FileUploaderBasic.prototype._onComplete.apply(this, arguments);
 
         // mark completed
-        var item = this._getItemByFileId(id);
-        qq.remove(this._find(item, 'cancel'));
-        qq.remove(this._find(item, 'spinner'));
+        var jqItem = this._getJqItemByFileId(id);
+
+        jqItem.find("." + this._classes.cancel).remove();
+        jqItem.find("." + this._classes.spinner).remove();
 
         if (result.success) {
-            qq.addClass(item, this._classes.success);
-            item.setAttribute('data-status', 'upload-complete');
+            jqItem.addClass(this._classes.success);
+            jqItem.attr('data-status', 'upload-complete');
         } else {
-            qq.addClass(item, this._classes.fail);
-            item.setAttribute('data-status', 'upload-failed');
+            jqItem.addClass(this._classes.fail);
+            jqItem.attr('data-status', 'upload-failed');
         }
     },
     _addToList: function (id, fileName) {
@@ -676,6 +682,18 @@ qq.extend(qq.FileUploader.prototype, {
             item = this._jqExternalElement.find("[data-id='" + id + "']");
         }
         return item.get(0);
+    },
+    _getJqItemByFileId: function (id) {
+        var item = this._jqElement.find("[data-id='" + id + "']");
+
+        if (item.length === 0) {
+            //check alternate out of page area
+            item = this._jqExternalElement.find("[data-id='" + id + "']");
+        }
+        return item;
+    },
+    _getJqItemByFileIdAndClassName: function (id, className) {
+        return item = _getJqItemByFileId(id).find("." + clasname);
     },
     /**
     * delegate click event for cancel link 

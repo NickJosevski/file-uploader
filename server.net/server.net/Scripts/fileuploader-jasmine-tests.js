@@ -106,6 +106,27 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         expect(spinner.length).toEqual(1);
     });
 
+
+    it("should strip out any illegal characters from the file name when _validateFile is called", function () {
+        
+        //TODO:
+    });
+    
+    it("should return false on an invalid extension when _validateFile is called", function () {
+
+        //TODO: _isAllowedExtension
+    });
+
+    it("should report size is zero when _validateFile is called", function () {
+
+        //TODO:
+    });
+
+    it("should report size exceeds minSizeLimit when _validateFile is called", function () {
+
+        //TODO:
+    });
+
     it("should have 3 remaining spans, with the sucess one visible when _onComplete is called with a success result", function () {
 
         var list, children, childSpans, success, size, failed;
@@ -1105,6 +1126,87 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
             debug: true
         });
     });
+    
+    it("should not overwrite progress on items removed from the list (simulated move away)", function () {
+        //setup 3 uploads ('in progress')
+        if (!isChromeOrFirefox) {
+            return;
+        }
+
+        var blob,
+            amountOfFiles = 6,
+            allBlobsGroupOne = [], allBlobsGroupTwo = [],
+            bb = new BlobBuilder(),
+            xhr = new window.XMLHttpRequest(),
+            inProgressGroup1 = [], inProgressGroup2 = [],
+            completedGroup = [], result = {},
+            g1ids, g2ids;
+
+        xhr.open('GET', 'jasmine_favicon.png', true);
+        xhr.responseType = 'arraybuffer';
+        bb.append(this.response);
+
+        for (; amountOfFiles > 0; amountOfFiles -= 1) {
+            blob = bb.getBlob('image/png');
+            blob.fileName = 'file.' + amountOfFiles;
+            blob.fileSize = 100000000;
+            //split the files into 2 groups
+            if ((amountOfFiles % 2) === 0) {
+                allBlobsGroupOne.push(blob);
+            } else {
+                allBlobsGroupTwo.push(blob);
+            }
+        }
+
+        //just checking on the creation
+        expect(allBlobsGroupOne.length).toEqual(3);
+        expect(allBlobsGroupTwo.length).toEqual(3);
+
+        g1ids = uploader._uploadFileList(allBlobsGroupOne);
+        //move them off
+        uploader.extractOutInProgress();
+
+        //expect 3 to have moved
+        $('#on-going-uploads').find('li').each(function () {
+            if ($(this).data("status") === "in-progress") {
+                inProgressGroup1.push($(this));
+            }
+        });
+
+        expect(inProgressGroup1.length).toEqual(3);
+
+        //start another 3 uploads
+        g2ids = uploader._uploadFileList(allBlobsGroupTwo);
+        //move them off
+        uploader.extractOutInProgress();
+
+        //verify 6 total still in progress
+        $('#on-going-uploads').find('li').each(function () {
+            if ($(this).data("status") === "in-progress") {
+                inProgressGroup2.push($(this));
+            }
+        });
+        expect(inProgressGroup2.length).toEqual(6);
+
+        //mark them all as complete, otherwise they may not complete by the time we get around to checking if they have
+        xhr = new window.XMLHttpRequest(),
+        xhr.status = 200;
+        xhr.responseText = '{success: true}';
+        result.error = false;
+        result.success = true;
+        $.each(g1ids.concat(g2ids), function (indx, val) {
+            uploader._onComplete(val, 'file.' + val, result);
+        });
+
+        $('#on-going-uploads').find('li').each(function (i, v) {
+            //IMPORTANT: do not use .data() here it will not be the most up to date value
+            if ($(v).attr("data-status") === "upload-complete") {
+                completedGroup.push(v);
+            }
+        });
+
+        expect(completedGroup.length).toEqual(6);
+    });
 
     afterEach(function () {
         $("#temp-elements").empty();
@@ -1112,19 +1214,30 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
     });
 });
 
-
-//planned features, once initial operation is unit tested:
-// - can re-set itself correctly when page navigated away but in scope still attempting via SetupTemplate()
-//      > Achieved via setupForReturnToPage, and some refactoring to move construction logic into new methods
-// - can track status of uploads easiers with a data attributed
-//      > Achieved via the data-status being set via _onComplete()
-// - use jQuery instead of pure javascript, then we diverge and can't really support taking new patches from original creators, or sending stuff back to them...
-//      > Starting, with the introduction of duplicate core variables
-//      > _jq prefixed elements are jQuery() elems and can be manipulated as such
-//      > while the rest of the variables can slowly be ported accross.
-// - solve the issue in Chrome about the drag div not dissapearing
-// - introduce the better hover mechanism from the custom one I adjusted
-// - can re-seed itself from past values (if page was navigated away)
+/*
+## Extended Features
+ - move away concept (navigate away)
+      > there is a need to be able to have 1 instance of of the uploader, 
+      > so progress can still be tracked as a user moves away from the initial screen
+      > many of the below features revolve around supporting this
+ - can re-set itself correctly when page navigated away but in scope still attempting via SetupTemplate()
+      > Achieved via setupForReturnToPage, and some refactoring to move construction logic into new methods
+ - can track status of uploads easier with a data attributed
+      > Achieved via the data-status being set via _onComplete()
+ - use jQuery instead of pure javascript, then we diverge and can't really support taking new patches from original creators, or sending stuff back to them...
+      > Starting, with the introduction of duplicate core variables
+      > _jq prefixed elements are jQuery() elems and can be manipulated as such
+      > while the rest of the variables can slowly be ported across.
+ - after having moved the in-progress elements new uploads do not clobber older ones
+      > for now this appears to work simply by ensuring the uploader isn't written over
+      > if there is a further need for the entire uploader to be re-seeded then that would be more complex 
+      > to achieve this may need to generate unique ids for elements, not just have them be indexes in arrays
+      
+ - after having moved the in-progress elements new uploads do not clobber older ones
+      > to achieve this will need to ensure the update progress can locate items
+ - solve the issue in Chrome about the drag div not disappearing
+ - introduce the better hover mechanism from the custom one I adjusted
+*/
 
 
 describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
@@ -1137,8 +1250,16 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
     //simply add a return to the top of the above describe block above, 
     //and use this one where less tests will run and no after test event is set up
 
+    //after having moved the in-progress elements new uploads do not clobber older ones
 
-    
+
+    //$('#on-going-uploads').remove();
+    // mock/hijack the onComplete so they stay in progress
+    //var onComplete = uploader._onComplete;
+    //uploader._onComplete = function (a, b, c) { console.log('hijacked'); };
+    //restore it, just in case it conflicts with other temporary tests (it shouldn't)
+    //uploader._onComplete = onComplete;
+
     beforeEach(function () {
         var temp = $("#temp-elements");
 
@@ -1163,7 +1284,7 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
             jqElementId: 'file-uploader',
             jqExternalElementId: 'on-going-uploads',
             action: '/upload/UploadFile',
-            debug: true
+            debug: false
         });
     });
 
@@ -1174,8 +1295,9 @@ function manualAction() {
     //helper for when errors aren't bubbling up from inside the unit tests
     //simply paste some code here, and hit the 'manual action' button on the spec runner page
     cl('nothing defined to run manually');
-    return;
-    var uploader = new qq.FileUploader({
+
+    var BlobBuilder = window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder,
+        uploader = new qq.FileUploader({
         element: $('#file-uploader')[0],
         jqElementId: 'file-uploader',
         jqExternalElementId: 'on-going-uploads',
@@ -1184,4 +1306,11 @@ function manualAction() {
     });
 
     //--
+
+    //setup 3 uploads ('in progress')
+    if (!isChromeOrFirefox) {
+        return;
+    }
+
+    
 };
