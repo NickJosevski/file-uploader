@@ -22,7 +22,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
             $('<div id="dialog" title="Basic dialog">')
                 .append($('<div id="file-uploader"></div>'))
         );
-        
+
         ongoingUploads = $('<div id="on-going-uploads">-On Going-</div>');
         $("body").append(ongoingUploads);
         externalList = ongoingUploads.append('<ul>');
@@ -53,19 +53,120 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         expect(uploader).toBeDefined();
     });
 
+    it("should create the correct handler based on browser when FileUploaderBasic._createUploadHandler is called", function () {
+
+        var basic = new qq.FileUploaderBasic(),
+            handler = basic._createUploadHandler();
+
+        if (isChromeOrFirefox) {
+            expect(handler.getLoaded).toBeDefined();
+            expect(handler._getIframeContentJSON).toBeUndefined();
+        } else {
+            expect(handler.getLoaded).toBeUndefined();
+            expect(handler._getIframeContentJSON).toBeDefined();
+        }
+    });
+
+    it("should strip out any illegal characters from the file name when FileUploaderBasic._validateFile is called", function () {
+
+        var pretendFile = {}, result;
+        pretendFile.value = 'file\\with\\a\\path\\file.name';
+
+        result = uploader._validateFile(pretendFile);
+
+        expect(result).toBeTruthy();
+    });
+
+    it("should return false on an invalid extension when FileUploaderBasic._validateFile is called", function () {
+
+        var pretendFile = {}, result;
+
+        pretendFile.value = 'file\\with\\a\\path\\file.name';
+        uploader._options.allowedExtensions = ['.jpg', '.gif'];
+
+        result = uploader._validateFile(pretendFile);
+        expect(result).toBeFalsy();
+    });
+
+    it("should return true on an valid extension when FileUploaderBasic._validateFile is called", function () {
+
+        var pretendFile = {}, result;
+
+        pretendFile.fileName = 'file.gif';
+        uploader._options.allowedExtensions = ['jpg', 'gif'];
+
+        result = uploader._validateFile(pretendFile);
+        expect(result).toBeTruthy();
+    });
+
+    it("should report size is zero when FileUploaderBasic._validateFile is called", function () {
+
+        var pretendFile = {}, result;
+
+        pretendFile.fileName = 'file.jpg';
+        pretendFile.size = 0;
+
+        result = uploader._validateFile(pretendFile);
+        expect(result).toBeFalsy();
+    });
+
+    it("should report size exceeds sizeLimit when FileUploaderBasic._validateFile is called", function () {
+
+        var pretendFile = {}, result;
+        uploader._options.sizeLimit = 1024;
+        pretendFile.fileName = 'file.jpg';
+        pretendFile.size = 1025;
+
+        result = uploader._validateFile(pretendFile);
+        expect(result).toBeFalsy();
+    });
+
+    it("should allow a file that's below the sizeLimit limit when FileUploaderBasic._validateFile is called", function () {
+
+        var pretendFile = {}, result;
+        uploader._options.sizeLimit = 1024;
+        pretendFile.fileName = 'file.jpg';
+        pretendFile.size = 1024;
+
+        result = uploader._validateFile(pretendFile);
+        expect(result).toBeTruthy();
+    });
+
+    it("should report size is less than the minSizeLimit when FileUploaderBasic._validateFile is called", function () {
+
+        var pretendFile = {}, result;
+        uploader._options.minSizeLimit = 1025;
+        pretendFile.fileName = 'file.jpg';
+        pretendFile.size = 1024;
+
+        result = uploader._validateFile(pretendFile);
+        expect(result).toBeFalsy();
+    });
+
+    it("should allow a file that's above the minSizeLimit limit when FileUploaderBasic._validateFile is called", function () {
+
+        var pretendFile = {}, result;
+        uploader._options.minSizeLimit = 1024;
+        pretendFile.fileName = 'file.jpg';
+        pretendFile.size = 1025;
+
+        result = uploader._validateFile(pretendFile);
+        expect(result).toBeTruthy();
+    });
+
     /*it("should set up the drag drop area when _setupDragDrop is called", function () {
-        //this test can't really work, it is truly dependant on the construction of 'uploader'
-        //so resetting the display area, and then only calling _setupDragDrop will only a subset of the correction actions done.
+    //this test can't really work, it is truly dependant on the construction of 'uploader'
+    //so resetting the display area, and then only calling _setupDragDrop will only a subset of the correction actions done.
 
-        $("#temp-elements").empty();
+    $("#temp-elements").empty();
 
-        uploader._setupDragDrop();
+    uploader._setupDragDrop();
         
-        var dialog = $("#dialog");
-        var uploadArea = dialog.find(":qq-uploader");
+    var dialog = $("#dialog");
+    var uploadArea = dialog.find(":qq-uploader");
 
-        expect(dialog.length).toEqual(1);
-        expect(uploadArea.length).toEqual(1);
+    expect(dialog.length).toEqual(1);
+    expect(uploadArea.length).toEqual(1);
     });*/
 
     it("should have _preventLeaveInProgress and therefore an attached event when calling _onSubmit", function () {
@@ -106,26 +207,6 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         expect(spinner.length).toEqual(1);
     });
 
-
-    it("should strip out any illegal characters from the file name when _validateFile is called", function () {
-        
-        //TODO:
-    });
-    
-    it("should return false on an invalid extension when _validateFile is called", function () {
-
-        //TODO: _isAllowedExtension
-    });
-
-    it("should report size is zero when _validateFile is called", function () {
-
-        //TODO:
-    });
-
-    it("should report size exceeds minSizeLimit when _validateFile is called", function () {
-
-        //TODO:
-    });
 
     it("should have 3 remaining spans, with the sucess one visible when _onComplete is called with a success result", function () {
 
@@ -554,10 +635,10 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
 
         root.parent().append(input);
         inputElem = $('#find-me').get(0);
-        
+
         expect(inputElem).toBeDefined();
         uhf.add(inputElem);
-        
+
         //expect it to be gone, after the add is complete
         expect($('#find-me').get(0)).toBeUndefined();
     });
@@ -569,13 +650,13 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
             inputElem,
             iframe,
             id;
-        
+
         root.parent().append(input);
         inputElem = $('#find-me').get(0);
 
         id = uhf.add(inputElem);
         iframe = uhf._createIframe(id);
-        
+
         expect(iframe).toBeDefined();
         expect($('#' + id).get(0)).toBeDefined();
     });
@@ -586,14 +667,14 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
             input = '<input id="find-me" type="file" />',
             inputElem,
             id;
-        
+
         root.parent().append(input);
         inputElem = $('#find-me').get(0);
 
         id = uhf.add(inputElem);
 
         uhf._upload(id, {});
-        
+
         expect(uhf._inputs[id]).toBeDefined();
         expect($('#' + id).get(0)).toBeDefined();
     });
@@ -610,41 +691,41 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
     //[Ignore('This test is proving impossible as the load event cannot be called on the iframe manually')]
     /*it("should be able to call the callback when UploadHandlerForm._attachLoadEvent is called", function () {
 
-        var uhf = new qq.UploadHandlerForm({ }),
-            root = $('#file-uploader'),
-            input = '<input id="find-me" type="file" />',
-            cb = function() {
-                root.append('<div id="created-by-callback"></div>');
-                return false;
-            },
-            doc,
-            iframe,
-            id = "i-frame0",
-            //inputElem,
-            expectedElement;
+    var uhf = new qq.UploadHandlerForm({ }),
+    root = $('#file-uploader'),
+    input = '<input id="find-me" type="file" />',
+    cb = function() {
+    root.append('<div id="created-by-callback"></div>');
+    return false;
+    },
+    doc,
+    iframe,
+    id = "i-frame0",
+    //inputElem,
+    expectedElement;
 
-        root.parent().append(input);
-        //inputElem = $('#find-me').get(0);
-        //id = uhf.add(inputElem);
-        iframe = uhf._createIframe(id);
+    root.parent().append(input);
+    //inputElem = $('#find-me').get(0);
+    //id = uhf.add(inputElem);
+    iframe = uhf._createIframe(id);
 
-        uhf._attachLoadEvent(iframe, cb);
-        //$("#i-frame0").trigger('load');
+    uhf._attachLoadEvent(iframe, cb);
+    //$("#i-frame0").trigger('load');
 
-        //Tried many things no luck:
-        //$("#i-frame0")[0].load();
-        //$("#i-frame0")[0].load.apply()
-        //($("#i-frame0").get(0))["load"].call();
-        //($("#i-frame0").get(0))["onload"].call();
-        //($("#i-frame0").get(0)).load.call();
+    //Tried many things no luck:
+    //$("#i-frame0")[0].load();
+    //$("#i-frame0")[0].load.apply()
+    //($("#i-frame0").get(0))["load"].call();
+    //($("#i-frame0").get(0))["onload"].call();
+    //($("#i-frame0").get(0)).load.call();
 
-        iframe = $("#i-frame0").get(0);
-        doc = iframe.contentDocument ? iframe.contentDocument : iframe.contentWindow.document;
-        doc.body.innerHTML = "{success: true}";
+    iframe = $("#i-frame0").get(0);
+    doc = iframe.contentDocument ? iframe.contentDocument : iframe.contentWindow.document;
+    doc.body.innerHTML = "{success: true}";
 
-        expectedElement = $('#created-by-callback');
-        expect(expectedElement.get(0)).toBeDefined();
-        expectedElement.remove();
+    expectedElement = $('#created-by-callback');
+    expect(expectedElement.get(0)).toBeDefined();
+    expectedElement.remove();
     });*/
 
     it("should test that UploadHandlerForm._createIframe is called when a an upload happens", function () {
@@ -660,7 +741,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         id = uhf.add(inputElem);
 
         uhf._upload(id, {});
-        
+
         expect($('#' + id).get(0)).toBeDefined();
     });
 
@@ -671,17 +752,17 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
             input = '<input id="find-me" type="file" />',
             inputElem,
             id;
-        
+
         root.parent().append(input);
         inputElem = $('#find-me').get(0);
 
         id = uhf.add(inputElem);
         uhf._upload(id, {});
-        
+
         expect($('#' + id).get(0)).toBeDefined();
 
         uhf._cancel(id);
-        
+
         expect($('#' + id).length).toEqual(0);
     });
 
@@ -747,26 +828,42 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         expect(qq.UploadHandlerXhr.isSupported()).toBeTruthy();
     });
 
-    it("should be able to take add a File (or superclass Blob) to the _files list when UploadHandlerXhr.add", function () {
+    it("should be able to take add a File (or super class Blob) to the _files list when UploadHandlerXhr.add", function () {
 
         if (!isChromeOrFirefox) {
             return;
         }
 
-        var blob,
+        var blob, continueWithThis,
             bb = new BlobBuilder(),
             xhr = new window.XMLHttpRequest(),
             uphxhr = new qq.UploadHandlerXhr({}),
             id;
 
-        xhr.open('GET', 'jasmine_favicon.png', true);
+        xhr.open('GET', '/Jasmine/jasmine_favicon.png', true);
         xhr.responseType = 'arraybuffer';
-        bb.append(this.response); // Note: not xhr.responseText
-        blob = bb.getBlob('image/png');
 
-        id = uphxhr.add(blob);
-        expect(uphxhr._files.length).toEqual(1);
-        expect(uphxhr._files[id]).toBeDefined();
+        continueWithThis = function () {
+            id = uphxhr.add(blob);
+        };
+
+        xhr.onload = function (e) {
+            if (this.status == 200) {
+                bb.append(this.response); // Note: not xhr.responseText
+                blob = bb.getBlob('image/png');
+                clp('instance of', blob instanceof Blob);
+                continueWithThis();
+            }
+        };
+
+        xhr.send();
+
+        waitsFor(function () { continueWithThis(); });
+
+        runs(function () {
+            expect(uphxhr._files.length).toEqual(1);
+            expect(uphxhr._files[id]).toBeDefined();
+        });
     });
 
     it("should be able to return the fileName property on the File object via UploadHandlerXhr.getName", function () {
@@ -781,12 +878,12 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
             resultFileName,
             id;
 
-        xhr.open('GET', 'jasmine_favicon.png', true);
+        xhr.open('GET', '/Jasmine/jasmine_favicon.png', true);
         xhr.responseType = 'arraybuffer';
         bb.append(this.response); // Note: not xhr.responseText
         blob = bb.getBlob('image/png');
         blob.fileName = 'filename.txt';
-        
+
         id = uphxhr.add(blob);
         resultFileName = uphxhr.getName(id);
 
@@ -805,14 +902,14 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
             resultFileSize,
             id;
 
-        xhr.open('GET', 'jasmine_favicon.png', true);
+        xhr.open('GET', '/Jasmine/jasmine_favicon.png', true);
         xhr.responseType = 'arraybuffer';
         bb.append(this.response); // Note: not xhr.responseText
         blob = bb.getBlob('image/png');
         blob.fileSize = 10240000;
-        
+
         id = uphxhr.add(blob);
-        
+
         resultFileSize = uphxhr.getSize(id);
 
         expect(resultFileSize).toEqual(10240000);
@@ -832,7 +929,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
             uphxhr = new qq.UploadHandlerXhr({}),
             id;
 
-        xhr.open('GET', 'jasmine_favicon.png', true);
+        xhr.open('GET', '/Jasmine/jasmine_favicon.png', true);
         xhr.responseType = 'arraybuffer';
         bb.append(this.response); // Note: not xhr.responseText
         blob = bb.getBlob('image/png');
@@ -877,7 +974,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
             uphxhr = new qq.UploadHandlerXhr({}),
             id;
 
-        xhr.open('GET', 'jasmine_favicon.png', true);
+        xhr.open('GET', '/Jasmine/jasmine_favicon.png', true);
         xhr.responseType = 'arraybuffer';
         bb.append(this.response); // Note: not xhr.responseText
         blob = bb.getBlob('image/png');
@@ -891,10 +988,10 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         it must be commented out
         */
         uphxhr._upload(0, {});
-        
+
         expect(uphxhr._files.length).toEqual(1);
         expect(uphxhr.getLoaded(id)).toEqual(0); //logically it should be 9, but since this is a test around current behaviour it's always coming back as 0
-        
+
         expect(uphxhr._loaded[id]).toEqual(uphxhr.getLoaded(id));
     });
 
@@ -1143,7 +1240,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
             completedGroup = [], result = {},
             g1ids, g2ids;
 
-        xhr.open('GET', 'jasmine_favicon.png', true);
+        xhr.open('GET', '/Jasmine/jasmine_favicon.png', true);
         xhr.responseType = 'arraybuffer';
         bb.append(this.response);
 
@@ -1261,13 +1358,13 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
     //uploader._onComplete = onComplete;
 
 
-    it("should not overwrite progress on items removed from the list (simulated move away)", function () {
+    it("should be able to cancel items that have move to the alter list (simulated move away)", function () {
         //setup 3 uploads ('in progress')
         if (!isChromeOrFirefox) {
             return;
         }
-
-        /*var blob,
+        return;
+        var blob,
             amountOfFiles = 6,
             allBlobsGroupOne = [], allBlobsGroupTwo = [],
             bb = new BlobBuilder(),
@@ -1276,14 +1373,14 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
             completedGroup = [], result = {},
             g1ids, g2ids;
 
-        xhr.open('GET', 'jasmine_favicon.png', true);
-        xhr.responseType = 'arraybuffer';
+        xhr.open('GET', 'bigfile.avi', false);
+        //xhr.responseType = 'blob';
         bb.append(this.response);
 
         for (; amountOfFiles > 0; amountOfFiles -= 1) {
-            blob = bb.getBlob('image/png');
-            blob.fileName = 'file.' + amountOfFiles;
-            blob.fileSize = 100000000;
+            blob = bb.getBlob('video/x-msvideo');
+            blob.fileName = 'avifile.' + amountOfFiles;
+            blob.fileSize = 183541760;
             //split the files into 2 groups
             if ((amountOfFiles % 2) === 0) {
                 allBlobsGroupOne.push(blob);
@@ -1297,50 +1394,102 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
         expect(allBlobsGroupTwo.length).toEqual(3);
 
         g1ids = uploader._uploadFileList(allBlobsGroupOne);
+        //$('#on-going-uploads').find("[data-id='" + g1ids[0] + "']").trigger('click');
         //move them off
         uploader.extractOutInProgress();
 
-        //expect 3 to have moved
-        $('#on-going-uploads').find('li').each(function () {
-            if ($(this).data("status") === "in-progress") {
-                inProgressGroup1.push($(this));
-            }
-        });
-
-        expect(inProgressGroup1.length).toEqual(3);
 
         //start another 3 uploads
         g2ids = uploader._uploadFileList(allBlobsGroupTwo);
         //move them off
         uploader.extractOutInProgress();
+        //$('#on-going-uploads').find("[data-id='" + g2ids[0] + "']").click();
 
-        //verify 6 total still in progress
-        $('#on-going-uploads').find('li').each(function () {
-            if ($(this).data("status") === "in-progress") {
-                inProgressGroup2.push($(this));
-            }
-        });
-        expect(inProgressGroup2.length).toEqual(6);
-
-        //mark them all as complete, otherwise they may not complete by the time we get around to checking if they have
-        xhr = new window.XMLHttpRequest(),
-        xhr.status = 200;
-        xhr.responseText = '{success: true}';
-        result.error = false;
-        result.success = true;
-        $.each(g1ids.concat(g2ids), function (indx, val) {
-            uploader._onComplete(val, 'file.' + val, result);
-        });
-
-        $('#on-going-uploads').find('li').each(function (i, v) {
-            //IMPORTANT: do not use .data() here it will not be the most up to date value
-            if ($(v).attr("data-status") === "upload-complete") {
-                completedGroup.push(v);
-            }
-        });
-
-        expect(completedGroup.length).toEqual(6);*/
+        //simulate cancel clicks on the first of each group
+        cl($('#on-going-uploads').find("[data-id='" + g1ids[0] + "']"));
     });
+
+    it("should be able to take add a File (or super class Blob) to the _files list when UploadHandlerXhr.add", function () {
+
+        if (!isChromeOrFirefox) {
+            return;
+        }
+
+        var blob, continueWithThis,
+            bb = new BlobBuilder(),
+            xhr = new window.XMLHttpRequest(),
+            uphxhr = new qq.UploadHandlerXhr({}),
+            id;
+
+        xhr.open('GET', '/Jasmine/jasmine_favicon.png', true);
+        xhr.responseType = 'arraybuffer';
+
+        /*continueWithThis = function () {
+        cl('continue');
+        id = uphxhr.add(blob);
+        };*/
+
+        xhr.onload = function (e) {
+            if (this.status == 200) {
+                bb.append(this.response); // Note: not xhr.responseText
+                blob = bb.getBlob('image/png');
+                clp('***instance of', blob instanceof Blob);
+                return true;
+            }
+            return false;
+        };
+
+        var f = function() { xhr.send(); };
+
+        var callback = jasmine.createSpy();
+        f(callback);
+        
+        waitsFor(function () {
+            return callback.callCount > 0;
+        });
+        
+        runs(function () {
+            expect(callback).toHaveBeenCalled();
+            id = uphxhr.add(blob);
+            expect(uphxhr._files.length).toEqual(1);
+            expect(uphxhr._files[id]).toBeDefined();
+        });
+        
+        /*waitsFor(function () {
+            cl('wait');
+            return xhr.onload(); // continueWithThis();
+        }, "timeout ended", 30000);
+
+        runs(function () {
+            clp('runs - blob', blob);
+            id = uphxhr.add(blob);
+            expect(uphxhr._files.length).toEqual(1);
+            expect(uphxhr._files[id]).toBeDefined();
+        });*/
+    });
+
+    it("should make a real AJAX request", function () {
+
+        var getProduct = function (id, cb) {
+            $.ajax({
+                type: "GET",
+                url: "data.json",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: cb
+            });
+        };
+
+        var callback = jasmine.createSpy();
+        getProduct(123, callback);
+        waitsFor(function () {
+            return callback.callCount > 0;
+        });
+        runs(function () {
+            expect(callback).toHaveBeenCalled();
+        });
+    });
+
 
     beforeEach(function () {
         var temp = $("#temp-elements");
@@ -1378,14 +1527,39 @@ function manualAction() {
     //helper for when errors aren't bubbling up from inside the unit tests
     //simply paste some code here, and hit the 'manual action' button on the spec runner page
     cl('nothing defined to run manually');
-
+    var BlobBuilder = window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder;
     //--
-    uploaderInProgress.extractOutInProgress();
 
-    //setup 3 uploads ('in progress')
-    if (!isChromeOrFirefox) {
-        return;
-    }
+    var blob, id, continueWithThis,
+        bb = new BlobBuilder(),
+        xhr = new window.XMLHttpRequest(), 
+        uphxhr = new qq.UploadHandlerXhr({ });
 
+    xhr.open('GET', '/Content/bigfile.avi', true);
+    xhr.responseType = 'arraybuffer';
+
+    continueWithThis = function () {
+        uphxhr.add(blob);
+
+        id = uphxhr.add(blob);
+        uphxhr._options.action = '/upload/UploadFile';
+        blob.fileName = 'real-content-' + (new Date()).getTime() + '.txt';
+
+        /*  The below line, exists in _upload, but gets in the way in Chrome during dev, for unit tests
+        xhr.setRequestHeader("Access-Control-Allow-Origin: *", "XMLHttpRequest");
+        it must be commented out
+        */
+        uphxhr._upload(id, {});
+    };
+
+    xhr.onload = function (e) {
+        if (this.status == 200) {
+            bb.append(this.response); // Note: not xhr.responseText
+            blob = bb.getBlob('image/png');
+            clp('instance of', blob instanceof Blob);
+            continueWithThis();
+        }
+    };
     
+    xhr.send();
 };

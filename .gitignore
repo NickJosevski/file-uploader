@@ -6,5 +6,6 @@ Thumbs.db
 *.user
 *.suo
 *.cache
+*.avi
 UploadedFiles/
 _ReSharper.*

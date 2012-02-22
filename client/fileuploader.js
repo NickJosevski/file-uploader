@@ -251,6 +251,7 @@ var qq = qq || {};
 * Creates upload button, validates upload, but doesn't create file list or dd. 
 */
 qq.FileUploaderBasic = function (o) {
+    var self = this;
     this._options = {
         // set to true to see the server response
         debug: false,
@@ -278,7 +279,9 @@ qq.FileUploaderBasic = function (o) {
             onLeave: "The files are being uploaded, if you leave now the upload will be cancelled."
         },
         showMessage: function (message) {
-            alert(message);
+            //this has been disabled as the page responsible for 
+            //handling the file limitations will display it in an alternate way
+            self._log(message);
         }
     };
     qq.extend(this._options, o);
@@ -301,6 +304,9 @@ qq.FileUploaderBasic.prototype = {
     },
     getInProgress: function () {
         return this._filesInProgress;
+    },
+    _log: function (str) {
+        if (this._options.debug && window.console) console.log('[uploader] ' + str);
     },
     _createUploadButton: function (element) {
         var self = this;
@@ -417,7 +423,7 @@ qq.FileUploaderBasic.prototype = {
             name = file.fileName != null ? file.fileName : file.name;
             size = file.fileSize != null ? file.fileSize : file.size;
         }
-
+        
         if (!this._isAllowedExtension(name)) {
             this._error('typeError', name);
             return false;
@@ -455,6 +461,7 @@ qq.FileUploaderBasic.prototype = {
         return name;
     },
     _isAllowedExtension: function (fileName) {
+        
         var ext = (-1 !== fileName.indexOf('.')) ? fileName.replace(/.*[.]/, '').toLowerCase() : '';
         var allowed = this._options.allowedExtensions;
 
@@ -546,7 +553,6 @@ qq.extend(qq.FileUploader.prototype, {
 
     setupForReturnToPage: function () {
         this._repeatableSetup();
-        this._setupDragDrop();
 
         qq.FileUploaderBasic.prototype.repeatableSetupForButton.apply(this, arguments);
     },
@@ -570,7 +576,11 @@ qq.extend(qq.FileUploader.prototype, {
         this._listElement = this._options.listElement || this._find(this._element, 'list');
 
         this._bindCancelEvent(this._listElement);
-        this._bindCancelEvent(this._jqListExternalElement[0]);
+        if (this._jqListExternalElement[0]) {
+            this._bindCancelEvent(this._jqListExternalElement[0]);
+        } else {
+            this._log('_repeatableSetup could not find the external area for moving active uploads to.');
+        }
         this._setupDragDrop();
     },
     /**
@@ -648,6 +658,9 @@ qq.extend(qq.FileUploader.prototype, {
 
         qq.setText(size, text);
     },
+    _log: function (msg) {
+        qq.FileUploaderBasic.prototype._log.apply(this, arguments);
+    },
     _onComplete: function (id, fileName, result) {
         qq.FileUploaderBasic.prototype._onComplete.apply(this, arguments);
 
@@ -703,19 +716,17 @@ qq.extend(qq.FileUploader.prototype, {
     * delegate click event for cancel link 
     **/
     _bindCancelEvent: function (list) {
-
+        
         var self = this;
 
         qq.attach(list, 'click', function (e) {
-            cl('cancel activated!');
+            cl('cancel activated');
             e = e || window.event;
             var target = e.target || e.srcElement;
 
             if (qq.hasClass(target, self._classes.cancel)) {
                 qq.preventDefault(e);
-                cl('cancel can go on!')
                 var item = target.parentNode;
-                cl(item);
                 self._handler.cancel(item.qqFileId);
                 qq.remove(item);
             }
@@ -1039,7 +1050,6 @@ qq.extend(qq.UploadHandlerForm.prototype, {
     },
     _cancel: function (id) {
         this._options.onCancel(id, this.getName(id));
-        cl('_cancel called');
         delete this._inputs[id];
 
         var iframe = document.getElementById(id);
@@ -1204,8 +1214,8 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
     * Returns id to use with upload, cancel
     **/
     add: function (file) {
-        if (!(file instanceof File) && !(file instanceof Blob)) {
-            throw new Error('Passed obj in not a File (in qq.UploadHandlerXhr)');
+        if (!(file instanceof File || file instanceof Blob)) {
+            throw new Error('Passed obj in not a File or Blob (in qq.UploadHandlerXhr)');
         }
 
         return this._files.push(file) - 1;
