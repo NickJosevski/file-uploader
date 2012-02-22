@@ -531,13 +531,11 @@ qq.FileUploader = function (o) {
     qq.extend(this._options, o);
 
     this._element = this._options.element;
+    
     this._repeatableSetup();
-    this._listElement = this._options.listElement || this._find(this._element, 'list');
 
     this._classes = this._options.classes;
 
-    this._bindCancelEvent();
-    this._setupDragDrop();
 };
 
 
@@ -568,6 +566,12 @@ qq.extend(qq.FileUploader.prototype, {
         this._button = this._createUploadButton(this._find(this._element, 'button'));
         this._jqListElement = $('#' + this._options.classes.list);
         this._jqListExternalElement = this._jqExternalElement.find("ul");
+
+        this._listElement = this._options.listElement || this._find(this._element, 'list');
+
+        this._bindCancelEvent(this._listElement);
+        this._bindCancelEvent(this._jqListExternalElement[0]);
+        this._setupDragDrop();
     },
     /**
     * Gets one of the elements listed in this._options.classes
@@ -698,18 +702,20 @@ qq.extend(qq.FileUploader.prototype, {
     /**
     * delegate click event for cancel link 
     **/
-    _bindCancelEvent: function () {
-        var self = this,
-            list = this._listElement;
+    _bindCancelEvent: function (list) {
+
+        var self = this;
 
         qq.attach(list, 'click', function (e) {
+            cl('cancel activated!');
             e = e || window.event;
             var target = e.target || e.srcElement;
 
             if (qq.hasClass(target, self._classes.cancel)) {
                 qq.preventDefault(e);
-
+                cl('cancel can go on!')
                 var item = target.parentNode;
+                cl(item);
                 self._handler.cancel(item.qqFileId);
                 qq.remove(item);
             }
@@ -1033,7 +1039,7 @@ qq.extend(qq.UploadHandlerForm.prototype, {
     },
     _cancel: function (id) {
         this._options.onCancel(id, this.getName(id));
-
+        cl('_cancel called');
         delete this._inputs[id];
 
         var iframe = document.getElementById(id);

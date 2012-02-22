@@ -9,7 +9,7 @@ var dd = dd || {};
 var isChromeOrFirefox = (/chrome/.test(navigator.userAgent.toLowerCase()) || $.browser.mozilla);
 
 describe("A core set of unit tests on the Valum file-uploader library, setting as a basepoint how it is expected to operate", function () {
-    //return;
+    return;
     var uploader,
         templateFromFileUploader,
         ongoingUploads,
@@ -971,6 +971,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
 });
 
 describe("modifictions (expansion) to the fileuploader lib", function () {
+    return;
     var uploader,
         ongoingUploads,
         externalList,
@@ -1036,7 +1037,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
 
         expect(list.data('status')).toEqual(expected);
     });
-    
+
     it("should be able return an item either from standard location, or toast area when _getItemByFileId is called.", function () {
         var id = 1888,
             result,
@@ -1052,7 +1053,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
         children = qq.children(result);
         expect(children.length).toEqual(5/*4 spans and a link for in progress*/);
     });
-    
+
     it("should be able relocate an item to a new list when _moveToExtenralList is called.", function () {
         var id = 1900,
             result,
@@ -1068,7 +1069,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
         expect(result.get(0)).toBeDefined();
         expect(result.find('.qq-upload-file').html()).toEqual(name);
     });
-    
+
     it("should be able relocate an item to a new list when _moveToExtenralList is called.", function () {
         var id = 1900,
             result,
@@ -1083,7 +1084,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
         expect(result.get(0)).toBeDefined();
         expect(result.find('.qq-upload-file').html()).toEqual(name);
     });
-    
+
     it("should extract only in progress items when FileUploader.extractOutInProgress is called.", function () {
         var id = 1900,
             result,
@@ -1106,7 +1107,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
             $('<div id="dialog" title="Basic dialog">')
                 .append($('<div id="file-uploader"></div>'))
         );
-        
+
         ongoingUploads = $('<div id="on-going-uploads">-On Going-</div>');
         $("body").append(ongoingUploads);
         externalList = ongoingUploads.append('<ul>');
@@ -1126,7 +1127,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
             debug: true
         });
     });
-    
+
     it("should not overwrite progress on items removed from the list (simulated move away)", function () {
         //setup 3 uploads ('in progress')
         if (!isChromeOrFirefox) {
@@ -1232,8 +1233,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
       > for now this appears to work simply by ensuring the uploader isn't written over
       > if there is a further need for the entire uploader to be re-seeded then that would be more complex 
       > to achieve this may need to generate unique ids for elements, not just have them be indexes in arrays
-      
- - after having moved the in-progress elements new uploads do not clobber older ones
+ - while in-progress list starts to complete, ensure e
       > to achieve this will need to ensure the update progress can locate items
  - solve the issue in Chrome about the drag div not disappearing
  - introduce the better hover mechanism from the custom one I adjusted
@@ -1260,6 +1260,88 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
     //restore it, just in case it conflicts with other temporary tests (it shouldn't)
     //uploader._onComplete = onComplete;
 
+
+    it("should not overwrite progress on items removed from the list (simulated move away)", function () {
+        //setup 3 uploads ('in progress')
+        if (!isChromeOrFirefox) {
+            return;
+        }
+
+        /*var blob,
+            amountOfFiles = 6,
+            allBlobsGroupOne = [], allBlobsGroupTwo = [],
+            bb = new BlobBuilder(),
+            xhr = new window.XMLHttpRequest(),
+            inProgressGroup1 = [], inProgressGroup2 = [],
+            completedGroup = [], result = {},
+            g1ids, g2ids;
+
+        xhr.open('GET', 'jasmine_favicon.png', true);
+        xhr.responseType = 'arraybuffer';
+        bb.append(this.response);
+
+        for (; amountOfFiles > 0; amountOfFiles -= 1) {
+            blob = bb.getBlob('image/png');
+            blob.fileName = 'file.' + amountOfFiles;
+            blob.fileSize = 100000000;
+            //split the files into 2 groups
+            if ((amountOfFiles % 2) === 0) {
+                allBlobsGroupOne.push(blob);
+            } else {
+                allBlobsGroupTwo.push(blob);
+            }
+        }
+
+        //just checking on the creation
+        expect(allBlobsGroupOne.length).toEqual(3);
+        expect(allBlobsGroupTwo.length).toEqual(3);
+
+        g1ids = uploader._uploadFileList(allBlobsGroupOne);
+        //move them off
+        uploader.extractOutInProgress();
+
+        //expect 3 to have moved
+        $('#on-going-uploads').find('li').each(function () {
+            if ($(this).data("status") === "in-progress") {
+                inProgressGroup1.push($(this));
+            }
+        });
+
+        expect(inProgressGroup1.length).toEqual(3);
+
+        //start another 3 uploads
+        g2ids = uploader._uploadFileList(allBlobsGroupTwo);
+        //move them off
+        uploader.extractOutInProgress();
+
+        //verify 6 total still in progress
+        $('#on-going-uploads').find('li').each(function () {
+            if ($(this).data("status") === "in-progress") {
+                inProgressGroup2.push($(this));
+            }
+        });
+        expect(inProgressGroup2.length).toEqual(6);
+
+        //mark them all as complete, otherwise they may not complete by the time we get around to checking if they have
+        xhr = new window.XMLHttpRequest(),
+        xhr.status = 200;
+        xhr.responseText = '{success: true}';
+        result.error = false;
+        result.success = true;
+        $.each(g1ids.concat(g2ids), function (indx, val) {
+            uploader._onComplete(val, 'file.' + val, result);
+        });
+
+        $('#on-going-uploads').find('li').each(function (i, v) {
+            //IMPORTANT: do not use .data() here it will not be the most up to date value
+            if ($(v).attr("data-status") === "upload-complete") {
+                completedGroup.push(v);
+            }
+        });
+
+        expect(completedGroup.length).toEqual(6);*/
+    });
+
     beforeEach(function () {
         var temp = $("#temp-elements");
 
@@ -1279,7 +1361,7 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
             '<ul id="qq-upload-list" class="qq-upload-list"></ul>' +
             '</div>';
 
-        uploader = new qq.FileUploader({
+        uploader = uploaderInProgress = new qq.FileUploader({
             element: $('#file-uploader')[0],
             jqElementId: 'file-uploader',
             jqExternalElementId: 'on-going-uploads',
@@ -1291,21 +1373,14 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
     //No after each, here in the "in-progress section" so we can debug elements
 });
 
+var uploaderInProgress;
 function manualAction() {
     //helper for when errors aren't bubbling up from inside the unit tests
     //simply paste some code here, and hit the 'manual action' button on the spec runner page
     cl('nothing defined to run manually');
 
-    var BlobBuilder = window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder,
-        uploader = new qq.FileUploader({
-        element: $('#file-uploader')[0],
-        jqElementId: 'file-uploader',
-        jqExternalElementId: 'on-going-uploads',
-        action: '/upload/UploadFile',
-        debug: true
-    });
-
     //--
+    uploaderInProgress.extractOutInProgress();
 
     //setup 3 uploads ('in progress')
     if (!isChromeOrFirefox) {
