@@ -1415,7 +1415,8 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
             return;
         }
 
-        var blob, continueWithThis,
+        var blob, continueWhenComplete, 
+            isComplete = false,
             bb = new BlobBuilder(),
             xhr = new window.XMLHttpRequest(),
             uphxhr = new qq.UploadHandlerXhr({}),
@@ -1424,71 +1425,55 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
         xhr.open('GET', '/Jasmine/jasmine_favicon.png', true);
         xhr.responseType = 'arraybuffer';
 
-        /*continueWithThis = function () {
-        cl('continue');
-        id = uphxhr.add(blob);
-        };*/
+        continueWhenComplete = function () {
+            return isComplete;
+        };
 
         xhr.onload = function (e) {
             if (this.status == 200) {
                 bb.append(this.response); // Note: not xhr.responseText
                 blob = bb.getBlob('image/png');
-                clp('***instance of', blob instanceof Blob);
-                return true;
+                isComplete = true;
             }
-            return false;
         };
-
-        var f = function() { xhr.send(); };
-
-        var callback = jasmine.createSpy();
-        f(callback);
+        xhr.send();
         
         waitsFor(function () {
-            return callback.callCount > 0;
-        });
-        
-        runs(function () {
-            expect(callback).toHaveBeenCalled();
-            id = uphxhr.add(blob);
-            expect(uphxhr._files.length).toEqual(1);
-            expect(uphxhr._files[id]).toBeDefined();
-        });
-        
-        /*waitsFor(function () {
-            cl('wait');
-            return xhr.onload(); // continueWithThis();
+
+            return continueWhenComplete();
+
         }, "timeout ended", 30000);
 
         runs(function () {
-            clp('runs - blob', blob);
+
             id = uphxhr.add(blob);
+
             expect(uphxhr._files.length).toEqual(1);
             expect(uphxhr._files[id]).toBeDefined();
-        });*/
-    });
-
-    it("should make a real AJAX request", function () {
-
-        var getProduct = function (id, cb) {
-            $.ajax({
-                type: "GET",
-                url: "data.json",
-                contentType: "application/json; charset=utf-8",
-                dataType: "json",
-                success: cb
-            });
-        };
-
-        var callback = jasmine.createSpy();
-        getProduct(123, callback);
-        waitsFor(function () {
-            return callback.callCount > 0;
-        });
-        runs(function () {
-            expect(callback).toHaveBeenCalled();
         });
     });
+
+    /*it("should make a real AJAX request", function () {
+
+    var getProduct = function (id, cb) {
+    $.ajax({
+    type: "GET",
+    url: "data.json",
+    contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    success: cb
+    });
+    };
+
+    var callback = jasmine.createSpy();
+    getProduct(123, callback);
+    waitsFor(function () {
+    return callback.callCount > 0;
+    });
+    runs(function () {
+    expect(callback).toHaveBeenCalled();
+    });
+    });*/
 
 
     beforeEach(function () {
