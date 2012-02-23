@@ -967,6 +967,7 @@ qq.UploadHandlerAbstract.prototype = {
     * Cancels file upload by id
     */
     cancel: function (id) {
+        clp('cancel called on', id);
         this._cancel(id);
         this._dequeue(id);
     },
@@ -1305,6 +1306,7 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
         this._dequeue(id);
     },
     _cancel: function (id) {
+        clp('cancel has been now called on', id);
         this._options.onCancel(id, this.getName(id));
 
         this._files[id] = null;

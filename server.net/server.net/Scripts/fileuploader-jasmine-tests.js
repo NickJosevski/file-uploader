@@ -834,7 +834,8 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
             return;
         }
 
-        var blob, continueWithThis,
+        var blob, continueWhenComplete,
+            isComplete = false,
             bb = new BlobBuilder(),
             xhr = new window.XMLHttpRequest(),
             uphxhr = new qq.UploadHandlerXhr({}),
@@ -843,24 +844,29 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         xhr.open('GET', '/Jasmine/jasmine_favicon.png', true);
         xhr.responseType = 'arraybuffer';
 
-        continueWithThis = function () {
-            id = uphxhr.add(blob);
+        continueWhenComplete = function () {
+            return isComplete;
         };
 
         xhr.onload = function (e) {
             if (this.status == 200) {
                 bb.append(this.response); // Note: not xhr.responseText
                 blob = bb.getBlob('image/png');
-                clp('instance of', blob instanceof Blob);
-                continueWithThis();
+                isComplete = true;
             }
         };
-
         xhr.send();
 
-        waitsFor(function () { continueWithThis(); });
+        waitsFor(function () {
+
+            return continueWhenComplete();
+
+        }, "timeout ended", 30000);
 
         runs(function () {
+
+            id = uphxhr.add(blob);
+
             expect(uphxhr._files.length).toEqual(1);
             expect(uphxhr._files[id]).toBeDefined();
         });
@@ -1363,8 +1369,8 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
         if (!isChromeOrFirefox) {
             return;
         }
-        return;
-        var blob,
+
+        var blob, continueWhenComplete, isComplete = false,
             amountOfFiles = 6,
             allBlobsGroupOne = [], allBlobsGroupTwo = [],
             bb = new BlobBuilder(),
@@ -1373,107 +1379,68 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
             completedGroup = [], result = {},
             g1ids, g2ids;
 
-        xhr.open('GET', 'bigfile.avi', false);
-        //xhr.responseType = 'blob';
-        bb.append(this.response);
-
-        for (; amountOfFiles > 0; amountOfFiles -= 1) {
-            blob = bb.getBlob('video/x-msvideo');
-            blob.fileName = 'avifile.' + amountOfFiles;
-            blob.fileSize = 183541760;
-            //split the files into 2 groups
-            if ((amountOfFiles % 2) === 0) {
-                allBlobsGroupOne.push(blob);
-            } else {
-                allBlobsGroupTwo.push(blob);
-            }
-        }
-
-        //just checking on the creation
-        expect(allBlobsGroupOne.length).toEqual(3);
-        expect(allBlobsGroupTwo.length).toEqual(3);
-
-        g1ids = uploader._uploadFileList(allBlobsGroupOne);
-        //$('#on-going-uploads').find("[data-id='" + g1ids[0] + "']").trigger('click');
-        //move them off
-        uploader.extractOutInProgress();
-
-
-        //start another 3 uploads
-        g2ids = uploader._uploadFileList(allBlobsGroupTwo);
-        //move them off
-        uploader.extractOutInProgress();
-        //$('#on-going-uploads').find("[data-id='" + g2ids[0] + "']").click();
-
-        //simulate cancel clicks on the first of each group
-        cl($('#on-going-uploads').find("[data-id='" + g1ids[0] + "']"));
-    });
-
-    it("should be able to take add a File (or super class Blob) to the _files list when UploadHandlerXhr.add", function () {
-
-        if (!isChromeOrFirefox) {
-            return;
-        }
-
-        var blob, continueWhenComplete, 
-            isComplete = false,
-            bb = new BlobBuilder(),
-            xhr = new window.XMLHttpRequest(),
-            uphxhr = new qq.UploadHandlerXhr({}),
-            id;
-
-        xhr.open('GET', '/Jasmine/jasmine_favicon.png', true);
+        xhr.open('GET', '/Jasmine/bigfile.avi', true);
         xhr.responseType = 'arraybuffer';
 
-        continueWhenComplete = function () {
-            return isComplete;
-        };
+        xhr.send();
 
         xhr.onload = function (e) {
             if (this.status == 200) {
                 bb.append(this.response); // Note: not xhr.responseText
-                blob = bb.getBlob('image/png');
+                blob = bb.getBlob('video/x-msvideo');
+                blob.fileSize = 183541760;
+
+                for (; amountOfFiles > 0; amountOfFiles -= 1) {
+                    cl(amountOfFiles);
+                    blob.fileName = 'avifile.' + amountOfFiles + '.avi';
+                    //split the files into 2 groups
+                    if ((amountOfFiles % 2) === 0) {
+                        allBlobsGroupOne.push(blob);
+                    } else {
+                        allBlobsGroupTwo.push(blob);
+                    }
+                }
                 isComplete = true;
             }
         };
-        xhr.send();
-        
-        waitsFor(function () {
 
-            return continueWhenComplete();
-
-        }, "timeout ended", 30000);
+        //async test setup, and wait
+        continueWhenComplete = function () { return isComplete; };
+        waitsFor(function () { return continueWhenComplete(); }, "timeout ended", 30000);
 
         runs(function () {
+            cl('intial data fetch done, now lets do stuff');
+            //just checking on the creation
+            expect(allBlobsGroupOne.length).toEqual(3);
+            expect(allBlobsGroupTwo.length).toEqual(3);
 
-            id = uphxhr.add(blob);
+            g1ids = uploader._uploadFileList(allBlobsGroupOne);
 
-            expect(uphxhr._files.length).toEqual(1);
-            expect(uphxhr._files[id]).toBeDefined();
+            //move them off
+            uploader.extractOutInProgress();
+
+            //now cancel 1st in group 1
+            cl('trying to find elem 1 to click on');
+            cl($('#on-going-uploads').find("[data-id='" + g1ids[0] + "']"));
+            cl($('#on-going-uploads').find("[data-id='" + g1ids[0] + "']").children(".qq-upload-cancel")[0]);
+            $('#on-going-uploads').find("[data-id='" + g1ids[0] + "']").find(".qq-upload-cancel")[0].click();
+            $('#on-going-uploads').find("[data-id='" + g1ids[0] + "']").find(".qq-upload-cancel").trigger('click');
+            $('#on-going-uploads').find("[data-id='" + g1ids[0] + "']").find(".qq-upload-cancel").click();
+
+            //start another 3 uploads
+            g2ids = uploader._uploadFileList(allBlobsGroupTwo);
+
+            //move them off
+            uploader.extractOutInProgress();
+            //now cancel 1st in group 2
+            cl('trying to find elem TWOOOO to click on');
+            cl($('#on-going-uploads').find("[data-id='" + g2ids[0] + "']")[0]);
+            $('#on-going-uploads').find("[data-id='" + g2ids[0] + "']").click();
+
+            //simulate cancel clicks on the first of each group
+            cl($('#on-going-uploads').find("[data-id='" + g1ids[0] + "']"));
         });
     });
-
-    /*it("should make a real AJAX request", function () {
-
-    var getProduct = function (id, cb) {
-    $.ajax({
-    type: "GET",
-    url: "data.json",
-    contentType: "application/json; charset=utf-8",
-    dataType: "json",
-    success: cb
-    });
-    };
-
-    var callback = jasmine.createSpy();
-    getProduct(123, callback);
-    waitsFor(function () {
-    return callback.callCount > 0;
-    });
-    runs(function () {
-    expect(callback).toHaveBeenCalled();
-    });
-    });*/
 
 
     beforeEach(function () {
