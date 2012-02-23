@@ -52,6 +52,9 @@ qq.getUniqueId = (function () {
 //
 // Events
 
+qq.attachJq = function (jqElement, type, fn) {
+    jqElement.on(type, fn);
+};
 qq.attach = function (element, type, fn) {
     if (element.addEventListener) {
         element.addEventListener(type, fn, false);
@@ -575,12 +578,6 @@ qq.extend(qq.FileUploader.prototype, {
 
         this._listElement = this._options.listElement || this._find(this._element, 'list');
 
-        this._bindCancelEvent(this._listElement);
-        if (this._jqListExternalElement[0]) {
-            this._bindCancelEvent(this._jqListExternalElement[0]);
-        } else {
-            this._log('_repeatableSetup could not find the external area for moving active uploads to.');
-        }
         this._setupDragDrop();
     },
     /**
@@ -679,7 +676,9 @@ qq.extend(qq.FileUploader.prototype, {
         }
     },
     _addToList: function (id, fileName) {
-        var item = qq.toElement(this._options.fileTemplate);
+        var item = qq.toElement(this._options.fileTemplate),
+            jqCancelItem;
+
         item.qqFileId = id;
         item.setAttribute('data-id', id);
         item.setAttribute('data-status', 'in-progress');
@@ -689,6 +688,10 @@ qq.extend(qq.FileUploader.prototype, {
         this._find(item, 'size').style.display = 'none';
 
         this._listElement.appendChild(item);
+
+        // once added, a cancel event can be wired up directly and only on the cancel anchor
+        jqCancelItem = this._jqListElement.find("." + this._classes.cancel);
+        this._bindCancelEvent(jqCancelItem);
     },
     _getItemByFileId: function (id) {
         //TODO: original idea was to switch on a '_stillOnSamePage' flag
@@ -715,21 +718,18 @@ qq.extend(qq.FileUploader.prototype, {
     /**
     * delegate click event for cancel link 
     **/
-    _bindCancelEvent: function (list) {
-        
+    _bindCancelEvent: function (cancelItem) {
+
         var self = this;
 
-        qq.attach(list, 'click', function (e) {
-            cl('cancel activated');
+        qq.attachJq(cancelItem, 'click', function (e) {
             e = e || window.event;
             var target = e.target || e.srcElement;
 
-            if (qq.hasClass(target, self._classes.cancel)) {
-                qq.preventDefault(e);
-                var item = target.parentNode;
-                self._handler.cancel(item.qqFileId);
-                qq.remove(item);
-            }
+            qq.preventDefault(e);
+            var item = target.parentNode;
+            self._handler.cancel(item.qqFileId);
+            qq.remove(item);
         });
     }
 });
@@ -967,7 +967,6 @@ qq.UploadHandlerAbstract.prototype = {
     * Cancels file upload by id
     */
     cancel: function (id) {
-        clp('cancel called on', id);
         this._cancel(id);
         this._dequeue(id);
     },
@@ -1306,7 +1305,6 @@ qq.extend(qq.UploadHandlerXhr.prototype, {
         this._dequeue(id);
     },
     _cancel: function (id) {
-        clp('cancel has been now called on', id);
         this._options.onCancel(id, this.getName(id));
 
         this._files[id] = null;

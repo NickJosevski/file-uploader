@@ -9,7 +9,7 @@ var dd = dd || {};
 var isChromeOrFirefox = (/chrome/.test(navigator.userAgent.toLowerCase()) || $.browser.mozilla);
 
 describe("A core set of unit tests on the Valum file-uploader library, setting as a basepoint how it is expected to operate", function () {
-    return;
+    
     var uploader,
         templateFromFileUploader,
         ongoingUploads,
@@ -1074,7 +1074,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
 });
 
 describe("modifictions (expansion) to the fileuploader lib", function () {
-    return;
+    
     var uploader,
         ongoingUploads,
         externalList,
@@ -1312,6 +1312,59 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
         expect(completedGroup.length).toEqual(6);
     });
 
+    it("should be able to cancel items that have move to the alter list (simulated move away)", function () {
+        //setup 3 uploads ('in progress')
+        if (!isChromeOrFirefox) {
+            return;
+        }
+
+        var blob, continueWhenComplete, isComplete = false,
+            singleUpload = [],
+            bb = new BlobBuilder(),
+            xhr = new window.XMLHttpRequest(),
+            upFileId;
+
+        xhr.open('GET', '/Jasmine/bigfile.mov', true);
+        xhr.responseType = 'arraybuffer';
+
+        xhr.send();
+
+        xhr.onload = function (e) {
+            if (this.status == 200) {
+
+                bb.append(this.response); // Note: not xhr.responseText
+                blob = bb.getBlob('video/x-msvideo');
+                blob.fileSize = 183541760;
+                blob.fileName = 'bigfile.mov';
+                singleUpload = blob;
+                isComplete = true;
+            }
+        };
+
+        //async test setup, and wait
+        continueWhenComplete = function () { return isComplete; };
+        waitsFor(function () { return continueWhenComplete(); }, "timeout ended", 30000);
+
+        runs(function () {
+            cl('intial data fetch done, now lets do stuff');
+
+            upFileId = uploader._uploadFile(singleUpload);
+
+            //just checking on the creation
+            expect(singleUpload).toBeDefined();
+
+            //move it off
+            uploader.extractOutInProgress();
+
+            //now cancel it
+            cl('did we find where to cancel?');
+            cl($('#on-going-uploads').find("[data-id='" + upFileId + "']").find('a'));
+
+            cl($('#on-going-uploads').find("[data-id='" + upFileId + "']").find('a').click);
+            $('#on-going-uploads').find("[data-id='" + upFileId + "']").find('a').click();
+        });
+    });
+
     afterEach(function () {
         $("#temp-elements").empty();
         $("#on-going-uploads").remove();
@@ -1344,6 +1397,9 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
 
 
 describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
+
+    return; //no new tests in progress
+    
     var uploader,
         ongoingUploads,
         externalList,
@@ -1354,94 +1410,6 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
     //and use this one where less tests will run and no after test event is set up
 
     //after having moved the in-progress elements new uploads do not clobber older ones
-
-
-    //$('#on-going-uploads').remove();
-    // mock/hijack the onComplete so they stay in progress
-    //var onComplete = uploader._onComplete;
-    //uploader._onComplete = function (a, b, c) { console.log('hijacked'); };
-    //restore it, just in case it conflicts with other temporary tests (it shouldn't)
-    //uploader._onComplete = onComplete;
-
-
-    it("should be able to cancel items that have move to the alter list (simulated move away)", function () {
-        //setup 3 uploads ('in progress')
-        if (!isChromeOrFirefox) {
-            return;
-        }
-
-        var blob, continueWhenComplete, isComplete = false,
-            amountOfFiles = 6,
-            allBlobsGroupOne = [], allBlobsGroupTwo = [],
-            bb = new BlobBuilder(),
-            xhr = new window.XMLHttpRequest(),
-            inProgressGroup1 = [], inProgressGroup2 = [],
-            completedGroup = [], result = {},
-            g1ids, g2ids;
-
-        xhr.open('GET', '/Jasmine/bigfile.avi', true);
-        xhr.responseType = 'arraybuffer';
-
-        xhr.send();
-
-        xhr.onload = function (e) {
-            if (this.status == 200) {
-                bb.append(this.response); // Note: not xhr.responseText
-                blob = bb.getBlob('video/x-msvideo');
-                blob.fileSize = 183541760;
-
-                for (; amountOfFiles > 0; amountOfFiles -= 1) {
-                    cl(amountOfFiles);
-                    blob.fileName = 'avifile.' + amountOfFiles + '.avi';
-                    //split the files into 2 groups
-                    if ((amountOfFiles % 2) === 0) {
-                        allBlobsGroupOne.push(blob);
-                    } else {
-                        allBlobsGroupTwo.push(blob);
-                    }
-                }
-                isComplete = true;
-            }
-        };
-
-        //async test setup, and wait
-        continueWhenComplete = function () { return isComplete; };
-        waitsFor(function () { return continueWhenComplete(); }, "timeout ended", 30000);
-
-        runs(function () {
-            cl('intial data fetch done, now lets do stuff');
-            //just checking on the creation
-            expect(allBlobsGroupOne.length).toEqual(3);
-            expect(allBlobsGroupTwo.length).toEqual(3);
-
-            g1ids = uploader._uploadFileList(allBlobsGroupOne);
-
-            //move them off
-            uploader.extractOutInProgress();
-
-            //now cancel 1st in group 1
-            cl('trying to find elem 1 to click on');
-            cl($('#on-going-uploads').find("[data-id='" + g1ids[0] + "']"));
-            cl($('#on-going-uploads').find("[data-id='" + g1ids[0] + "']").children(".qq-upload-cancel")[0]);
-            $('#on-going-uploads').find("[data-id='" + g1ids[0] + "']").find(".qq-upload-cancel")[0].click();
-            $('#on-going-uploads').find("[data-id='" + g1ids[0] + "']").find(".qq-upload-cancel").trigger('click');
-            $('#on-going-uploads').find("[data-id='" + g1ids[0] + "']").find(".qq-upload-cancel").click();
-
-            //start another 3 uploads
-            g2ids = uploader._uploadFileList(allBlobsGroupTwo);
-
-            //move them off
-            uploader.extractOutInProgress();
-            //now cancel 1st in group 2
-            cl('trying to find elem TWOOOO to click on');
-            cl($('#on-going-uploads').find("[data-id='" + g2ids[0] + "']")[0]);
-            $('#on-going-uploads').find("[data-id='" + g2ids[0] + "']").click();
-
-            //simulate cancel clicks on the first of each group
-            cl($('#on-going-uploads').find("[data-id='" + g1ids[0] + "']"));
-        });
-    });
-
 
     beforeEach(function () {
         var temp = $("#temp-elements");
@@ -1482,36 +1450,4 @@ function manualAction() {
     var BlobBuilder = window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder;
     //--
 
-    var blob, id, continueWithThis,
-        bb = new BlobBuilder(),
-        xhr = new window.XMLHttpRequest(), 
-        uphxhr = new qq.UploadHandlerXhr({ });
-
-    xhr.open('GET', '/Content/bigfile.avi', true);
-    xhr.responseType = 'arraybuffer';
-
-    continueWithThis = function () {
-        uphxhr.add(blob);
-
-        id = uphxhr.add(blob);
-        uphxhr._options.action = '/upload/UploadFile';
-        blob.fileName = 'real-content-' + (new Date()).getTime() + '.txt';
-
-        /*  The below line, exists in _upload, but gets in the way in Chrome during dev, for unit tests
-        xhr.setRequestHeader("Access-Control-Allow-Origin: *", "XMLHttpRequest");
-        it must be commented out
-        */
-        uphxhr._upload(id, {});
-    };
-
-    xhr.onload = function (e) {
-        if (this.status == 200) {
-            bb.append(this.response); // Note: not xhr.responseText
-            blob = bb.getBlob('image/png');
-            clp('instance of', blob instanceof Blob);
-            continueWithThis();
-        }
-    };
-    
-    xhr.send();
 };
