@@ -3,7 +3,36 @@
 * * * 
 
 ## Fork Note:
-  The objective of the fork was to introduce unit tests via jasmine around the very useful fileuploader. These Unit Tests were to give confidence in expanding the uploader with some newer features. 
+  The objective of the fork was to introduce unit tests via jasmine around the very useful fileuploader. These Unit Tests were to give confidence in expanding the uploader with some newer features. To simplify the development, it has now taken a **dependency on jQuery**.
+  
+### Features
+ 
+ To support a *Single Page Application* (SPA) style:
+ 
+  - Jasmine Unit Tests
+  - 
+  - Creating a single 'instance' of **qq.FileUploader**
+  - Supported by a new function: **qq.setupForReturnToPage**
+  - jq prefixed elements/variables/methods on the library (ongoing plan is a complete port to jQuery)
+  - 2 new critical setup elements:
+   * jqElementId - the same element but as a $() jQuery object
+    * jqExternalElementId - the div which will display uploads when user moves away into another part of the *SPA*
+  
+### How it works
+
+A single instance of the FileUploader is created, so long as the page is not navigated away from, a wire up of an alternate area to display upload progress (for example in the footer area of the application), when you navigate away it moves the in progress uploads into the div supplied via option **jqExternalElementId**
+
+    uploader = new qq.FileUploader({
+        element: $('#file-uploader')[0],
+        jqElementId: 'file-uploader',
+        jqExternalElementId: 'on-going-uploads',
+        action: '/upload/UploadFile',
+        debug: false
+    });
+    
+### Important note
+
+This library is still a halfway port, so the majority of the library functions traditionally, only the features relevant 
 
 ### Original ReadMe Follows:
   
