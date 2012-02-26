@@ -10,7 +10,7 @@
  To support a *Single Page Application* (SPA) style:
  
   - Jasmine Unit Tests
-  - 
+  - ASP.NET MVC server side upload handling code (with integrated jasmine test runner)
   - Creating a single 'instance' of **qq.FileUploader**
   - Supported by a new function: **qq.setupForReturnToPage**
   - jq prefixed elements/variables/methods on the library (ongoing plan is a complete port to jQuery)
