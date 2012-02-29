@@ -1093,7 +1093,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
         //clear our the setup as if we're coming back to the same page via ajax, and uploader is not gettin re-created
         $('#file-uploader').empty();
 
-        uploader.setupForReturnToPage();
+        uploader.setupForReturnToPage($('#file-uploader')[0]);
 
         var fileInput = $('#file-uploader').find(":input:file");
         var buttons = $('#file-uploader').find(".qq-upload-button");

@@ -554,7 +554,8 @@ qq.extend(qq.FileUploader.prototype, qq.FileUploaderBasic.prototype);
 
 qq.extend(qq.FileUploader.prototype, {
 
-    setupForReturnToPage: function () {
+    setupForReturnToPage: function (reseedElement) {
+        this._options.element = reseedElement;
         this._repeatableSetup();
 
         qq.FileUploaderBasic.prototype.repeatableSetupForButton.apply(this, arguments);
