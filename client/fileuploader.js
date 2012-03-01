@@ -316,6 +316,7 @@ qq.FileUploaderBasic.prototype = {
 
         return new qq.UploadButton({
             element: element,
+            jqElementId: this._options.jqElementId,
             multiple: this._options.multiple && qq.UploadHandlerXhr.isSupported(),
             onChange: function (input) {
                 self._onInputChange(input);
@@ -622,18 +623,27 @@ qq.extend(qq.FileUploader.prototype, {
         dropArea.style.display = 'none';
 
         qq.attach(document, 'dragenter', function (e) {
+            cl('dragenter');
             if (!dz._isValidFileDrag(e)) return;
 
             dropArea.style.display = 'block';
         });
-        qq.attach(document, 'dragleave', function (e) {
-            if (!dz._isValidFileDrag(e)) return;
 
+        $(document).on('dragleave', function (e) {
+
+            //an alternate way to check that the drag element has left the page.
+            if (e.originalEvent.pageX == "0") {
+                dropArea.style.display = 'none';
+            }
+
+            if (!dz._isValidFileDrag(e)) return;
             var relatedTarget = document.elementFromPoint(e.clientX, e.clientY);
+
             // only fire when leaving document out
             if (!relatedTarget || relatedTarget.nodeName == "HTML") {
                 dropArea.style.display = 'none';
             }
+            
         });
     },
     _onSubmit: function (id, fileName) {
@@ -785,12 +795,14 @@ qq.UploadDropZone.prototype = {
         });
 
         qq.attach(self._element, 'dragenter', function (e) {
+            cl('qq.A drag enter');
             if (!self._isValidFileDrag(e)) return;
 
             self._options.onEnter(e);
         });
 
         qq.attach(self._element, 'dragleave', function (e) {
+            cl('qq.A drag leave');
             if (!self._isValidFileDrag(e)) return;
 
             self._options.onLeave(e);
@@ -831,7 +843,8 @@ qq.UploadButton = function (o) {
         name: 'file',
         onChange: function (input) { },
         hoverClass: 'qq-upload-button-hover',
-        focusClass: 'qq-upload-button-focus'
+        focusClass: 'qq-upload-button-focus',
+        jqElementId: 'replace-me'
     };
 
     qq.extend(this._options, o);
@@ -865,16 +878,13 @@ qq.UploadButton.prototype = {
         this._input = this._createInput();
     },
     _createInput: function () {
-        var input = document.createElement("input");
-
+        var input = $('<input type="file" />');
         if (this._options.multiple) {
-            input.setAttribute("multiple", "multiple");
+            input.attr('multiple', 'multiple');
         }
+        input.attr('name', this._options.name);
 
-        input.setAttribute("type", "file");
-        input.setAttribute("name", this._options.name);
-
-        qq.css(input, {
+        input.css({
             position: 'absolute',
             // in Opera only 'browse' button
             // is clickable and it is located at
@@ -890,23 +900,25 @@ qq.UploadButton.prototype = {
             opacity: 0
         });
 
-        this._element.appendChild(input);
+        //this._element.appendChild(input);
+        var root = $('#' + this._options.jqElementId);
+        root.append(input);
 
         var self = this;
-        qq.attach(input, 'change', function () {
-            self._options.onChange(input);
+        input.on('change', function () {
+            self._options.onChange(input[0]);
         });
 
-        qq.attach(input, 'mouseover', function () {
+        input.mouseover(function () {
             qq.addClass(self._element, self._options.hoverClass);
         });
-        qq.attach(input, 'mouseout', function () {
+        input.mouseout(function () {
             qq.removeClass(self._element, self._options.hoverClass);
         });
-        qq.attach(input, 'focus', function () {
+        input.on('focus', function () {
             qq.addClass(self._element, self._options.focusClass);
         });
-        qq.attach(input, 'blur', function () {
+        input.on('blur', function () {
             qq.removeClass(self._element, self._options.focusClass);
         });
 
@@ -914,10 +926,10 @@ qq.UploadButton.prototype = {
         // which is unacceptable in our case, disable keyboard access
         if (window.attachEvent) {
             // it is IE or Opera
-            input.setAttribute('tabIndex', "-1");
+            input.attr('tabIndex', "-1");
         }
 
-        return input;
+        return input[0];
     }
 };
 

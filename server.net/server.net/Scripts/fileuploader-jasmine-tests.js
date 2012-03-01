@@ -9,7 +9,7 @@ var dd = dd || {};
 var isChromeOrFirefox = (/chrome/.test(navigator.userAgent.toLowerCase()) || $.browser.mozilla);
 
 describe("A core set of unit tests on the Valum file-uploader library, setting as a basepoint how it is expected to operate", function () {
-    
+    //return;
     var uploader,
         templateFromFileUploader,
         ongoingUploads,
@@ -487,9 +487,11 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
 
         buttonClass = new qq.UploadButton({
             element: buttonDiv,
+            jqElementId: 'file-uploader',
             multiple: true,
             onChange: function (input) { console.log(input); }
         });
+
         //it was created, but kill it and ensure the _createInput() call can handle it on its own
         root.find(':input').remove();
         //call it again, in case flow changes, it is called in the creation
@@ -497,7 +499,6 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
 
         //fileInput = uploader._find(buttonDiv, ":input[name=file]"); // 
         fileInput = $('#file-uploader').find(':input');
-
         expect(fileInput).toBeDefined();
         expect(fileInput.length).toEqual(1);
     });
@@ -1074,7 +1075,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
 });
 
 describe("modifictions (expansion) to the fileuploader lib", function () {
-    
+    //return;
     var uploader,
         ongoingUploads,
         externalList,
@@ -1312,7 +1313,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
         expect(completedGroup.length).toEqual(6);
     });
 
-    it("should be able to cancel items that have move to the alter list (simulated move away)", function () {
+    it("should be able to cancel items that have move to the alter list (simulated move away) - note test depends on a file existing (that's not included in repo due to size, any .MOV will do)", function () {
         //setup 3 uploads ('in progress')
         if (!isChromeOrFirefox) {
             return;
@@ -1357,10 +1358,6 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
             uploader.extractOutInProgress();
 
             //now cancel it
-            cl('did we find where to cancel?');
-            cl($('#on-going-uploads').find("[data-id='" + upFileId + "']").find('a'));
-
-            cl($('#on-going-uploads').find("[data-id='" + upFileId + "']").find('a').click);
             $('#on-going-uploads').find("[data-id='" + upFileId + "']").find('a').click();
         });
     });
@@ -1391,15 +1388,17 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
       > to achieve this may need to generate unique ids for elements, not just have them be indexes in arrays
  - while in-progress list starts to complete, ensure e
       > to achieve this will need to ensure the update progress can locate items
- - solve the issue in Chrome about the drag div not disappearing
+ - solve the issue in Chrome about the drag div not disappearing, to re-create the issue simply drag over, 
+   and don't drop pull it back and the drop area will not vanish
+      > this no longer seems to be an issue
  - introduce the better hover mechanism from the custom one I adjusted
 */
 
 
 describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
 
-    return; //no new tests in progress
-    
+    //return; //no new tests in progress
+
     var uploader,
         ongoingUploads,
         externalList,
@@ -1408,6 +1407,13 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
 
     //simply add a return to the top of the above describe block above, 
     //and use this one where less tests will run and no after test event is set up
+
+    it("repair hid div when drop item is pulled back away (not dropped)", function () {
+        //this is a mouse event issue, making a unit test would be very difficult
+        //Manual test:
+        //to re-create the issue simply drag over, and don't drop pull it back and the drop area will not vanish
+        expect(true).toBeTruthy();
+    });
 
     //after having moved the in-progress elements new uploads do not clobber older ones
 
