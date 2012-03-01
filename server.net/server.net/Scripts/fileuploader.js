@@ -541,12 +541,7 @@ qq.FileUploader = function (o) {
     // overwrite options with user supplied    
     qq.extend(this._options, o);
 
-    this._element = this._options.element;
-    
     this._repeatableSetup();
-
-    this._classes = this._options.classes;
-
 };
 
 
@@ -571,6 +566,8 @@ qq.extend(qq.FileUploader.prototype, {
         });
     },
     _repeatableSetup: function () {
+        this._element = this._options.element;
+        this._classes = this._options.classes;
         this._jqElement = $('#' + this._options.jqElementId);
         this._jqExternalElement = $('#' + this._options.jqExternalElementId);
         this._jqElement.html(this._options.template);
@@ -595,7 +592,7 @@ qq.extend(qq.FileUploader.prototype, {
     },
     _moveToExternalList: function (id) {
         var elem = this._jqElement.find("[data-id='" + id + "']");
-        this._jqListExternalElement.append(elem)
+        this._jqListExternalElement.append(elem);
     },
     _setupDragDrop: function () {
         var self = this,
@@ -623,7 +620,6 @@ qq.extend(qq.FileUploader.prototype, {
         dropArea.style.display = 'none';
 
         qq.attach(document, 'dragenter', function (e) {
-            cl('dragenter');
             if (!dz._isValidFileDrag(e)) return;
 
             dropArea.style.display = 'block';
@@ -795,14 +791,12 @@ qq.UploadDropZone.prototype = {
         });
 
         qq.attach(self._element, 'dragenter', function (e) {
-            cl('qq.A drag enter');
             if (!self._isValidFileDrag(e)) return;
 
             self._options.onEnter(e);
         });
 
         qq.attach(self._element, 'dragleave', function (e) {
-            cl('qq.A drag leave');
             if (!self._isValidFileDrag(e)) return;
 
             self._options.onLeave(e);
@@ -900,7 +894,7 @@ qq.UploadButton.prototype = {
             opacity: 0
         });
 
-        //this._element.appendChild(input);
+        
         var root = $('#' + this._options.jqElementId);
         root.append(input);
 
