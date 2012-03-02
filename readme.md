@@ -5,6 +5,8 @@
 ## Fork Note:
   The objective of the fork was to introduce unit tests via jasmine around the very useful fileuploader. These Unit Tests were to give confidence in expanding the uploader with some newer features. To simplify the development, it has now taken a **dependency on jQuery**.
   
+  To run the Jasmine unit tests hit F5 on the server.net solution and go to the '**SpecRunner**' menu item (1 test will depend on you adding a larger .MOV file into the *server.net\Jasmine* folder
+  
 ### Features
  
  To support a *Single Page Application* (SPA) style:

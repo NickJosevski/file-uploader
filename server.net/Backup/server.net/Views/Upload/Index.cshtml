@@ -1,0 +1,32 @@
+﻿@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- NOTE these files are ALWAYS sourced from the client folder outside of the project, 
+    just to simplify the structure of this project, they always get copied in-->
+<script type="text/javascript" src="@Url.Content("~/Scripts/fileuploader.js")"></script>
+
+
+<script type="text/javascript">
+    $(document).ready(function() {
+        var uploader = new qq.FileUploader({
+                element: $('#file-uploader')[0],
+                action: '/upload/UploadFile',
+                debug: true
+            });
+    });
+</script>
+
+<h2>file-uploader</h2>
+
+<p>
+<div id="upload-area">
+    <div id="file-uploader">		
+        <noscript>			
+            <p>Please enable JavaScript to use file uploader.</p>
+            <!-- or put a simple form for upload here -->
+        </noscript>         
+    </div>
+</div>
+</p>

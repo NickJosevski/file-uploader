@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 11
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "server.net", "server.net\server.net.csproj", "{A9034E9F-BFF1-4580-8380-1DBA74AAF52D}"
 EndProject
 Global

@@ -1,0 +1,70 @@
+﻿@{
+    ViewBag.Title = "file-uploader";
+}
+
+@section title { 
+<section class="site-title">
+    <h1>@ViewBag.Title</h1>
+</section>
+}
+
+@section featured {
+<section class="featured">
+    <div class="content-wrapper">
+        <hgroup class="title">
+            <h2>@ViewBag.Message</h2>
+        </hgroup>
+        <p>
+            This plugin uses XHR for uploading multiple files with progress-bar in FF3.6+, Safari4+, Chrome and falls back to hidden iframe based upload in other browsers, providing good user experience everywhere.
+        </p>
+        <p>The .NET Fork here - <a href="https://github.com/NickJosevski/file-uploader">https://github.com/NickJosevski/file-uploader</a></p>
+        <p>The original fom <strong>Valums</strong> here - <a href="https://github.com/valums/file-uploader">https://github.com/valums/file-uploader</a></p>
+        <p><strong>@Html.ActionLink("Try it out here by going to the `upload` section.", "Index", "Upload")</strong></p>
+    </div>
+</section>
+}
+
+
+<h3>Introduction:</h3>
+
+<ol class="round">
+    <li class="one">
+        <h5>Cross Browser</h5>
+        Multi-select, drag and drop (FF & Chrome), No-Flash, Tested on: IE 7,8 FF 3, 3.6, 4+, Safari 4,5, Chrome, Opera 10.60
+    </li>
+    <li class="two">
+        <h5>Robust</h5>
+        Cancel uploads, https, keyboard support (FF, Chrome, Safari)
+    </li>
+    <li class="three">
+        <h5>More info</h5>
+        <a href="https://github.com/valums/file-uploader/blob/master/readme.md">https://github.com/valums/file-uploader/blob/master/readme.md</a>
+    </li>
+</ol>
+
+<section class="features">
+    <section class="feature">
+        <img src="@Url.Content("~/images/aspNetHome.png")" alt="ASP.NET" />
+        <h3>ASP.NET</h3>
+        <p> 
+            To demonstrate what it takes to set this up in ASP.NET. 
+        </p>
+        <p>
+            <strong>Note:</strong> A configuration element has been set in web.config - &lt;httpRuntime maxRequestLength="1073741824" /&gt;
+        </p>
+    </section>
+    <section class="feature">
+        <img src="@Url.Content("~/images/NuGetGallery.png")" alt="NuGet" />
+        <h3>NuGet Gallery</h3>
+        <p>
+            Possibly coming as a package.
+        </p>
+    </section>
+    <section class="feature">
+        <img src="@Url.Content("~/images/findHosting.png")" alt="Hosting" />
+        <h3>Upload Controller</h3>
+        <p>
+            @Html.ActionLink("Cilck here.", "Index", "Upload") for the upload page feature demo. 
+        </p>
+    </section>
+</section>
