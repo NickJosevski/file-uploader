@@ -34,7 +34,9 @@ A single instance of the FileUploader is created, so long as the page is not nav
     
 ### Important note
 
-This library is still a halfway port, so the majority of the library functions traditionally, only the features relevant 
+This library is still a halfway port, so the majority of the library functions traditionally, only the features relevant to either bugs or new functionality have been modified to use jQuery, and usually only when there have been problems.
+
+A future step would be coffee script, but that's much longer term.
 
 ### Original ReadMe Follows:
   
