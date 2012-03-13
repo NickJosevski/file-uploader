@@ -24,6 +24,8 @@ $(function () {
         // Act
         uploader = new qq.FileUploader({
             element: $('#file-uploader')[0],
+            jqElementId: 'file-uploader',
+            jqExternalElementId: 'on-going-uploads',
             action: '/upload/UploadFile',
             debug: true
         });
@@ -40,6 +42,8 @@ $(function () {
         createDomElements();
         uploader = new qq.FileUploader({
             element: $('#file-uploader')[0],
+            jqElementId: 'file-uploader',
+            jqExternalElementId: 'on-going-uploads',
             action: '/upload/UploadFile',
             debug: true
         });

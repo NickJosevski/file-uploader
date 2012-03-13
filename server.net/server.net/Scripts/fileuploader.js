@@ -13,8 +13,6 @@
 
 var qq = qq || {};
 
-window.$qq = qq;
-
 /**
 * Adds all missing properties from second obj to first obj
 */
