@@ -17,15 +17,17 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         BlobBuilder = window.MozBlobBuilder || window.WebKitBlobBuilder || window.BlobBuilder;
 
     beforeEach(function () {
-        var temp = $("#temp-elements");
-        temp.append(
-            $('<div id="dialog" title="Basic dialog">')
-                .append($('<div id="file-uploader"></div>'))
+
+        $("body").append(
+            $('<div id="temp-elements">')
+                .append(
+                    $('<div id="dialog" title="Basic dialog">')
+                    .append($('<div id="file-uploader"></div>'))
+                )
         );
 
-        ongoingUploads = $('<div id="on-going-uploads">-On Going-</div>');
+        ongoingUploads = $('<div id="on-going-uploads">-On Going-</div>').append('<ul>');
         $("body").append(ongoingUploads);
-        externalList = ongoingUploads.append('<ul>');
 
         templateFromFileUploader =
             '<div class="qq-uploader">' +
@@ -1206,15 +1208,16 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
 
     beforeEach(function () {
 
-        var temp = $("#temp-elements");
-        temp.append(
-            $('<div id="dialog" title="Basic dialog">')
-                .append($('<div id="file-uploader"></div>'))
+        $("body").append(
+            $('<div id="temp-elements">')
+                .append(
+                    $('<div id="dialog" title="Basic dialog">')
+                    .append($('<div id="file-uploader"></div>'))
+                )
         );
 
-        ongoingUploads = $('<div id="on-going-uploads">-On Going-</div>');
+        ongoingUploads = $('<div id="on-going-uploads">-On Going-</div>').append('<ul>');
         $("body").append(ongoingUploads);
-        externalList = ongoingUploads.append('<ul>');
 
         templateFromFileUploader =
             '<div class="qq-uploader">' +
@@ -1418,16 +1421,17 @@ describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
     //after having moved the in-progress elements new uploads do not clobber older ones
 
     beforeEach(function () {
-        var temp = $("#temp-elements");
 
-        ongoingUploads = $('<div id="on-going-uploads">-On Going-</div>');
-        $("body").append(ongoingUploads);
-        externalList = ongoingUploads.append('<ul>');
-
-        temp.append(
-            $('<div id="dialog" title="Basic dialog">')
-                .append($('<div id="file-uploader"></div>'))
+        $("body").append(
+            $('<div id="temp-elements">')
+                .append(
+                    $('<div id="dialog" title="Basic dialog">')
+                    .append($('<div id="file-uploader"></div>'))
+                )
         );
+
+        ongoingUploads = $('<div id="on-going-uploads">-On Going-</div>').append('<ul>');
+        $("body").append(ongoingUploads);
 
         templateFromFileUploader =
             '<div class="qq-uploader">' +
