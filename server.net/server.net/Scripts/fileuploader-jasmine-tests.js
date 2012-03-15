@@ -1,4 +1,7 @@
-﻿var cl = function(d) {
+﻿/// <reference path="jquery-1.7.1.js" />
+/// <reference path="fileuploader.js" />
+
+var cl = function (d) {
     console.log(d);
 };
 var clp = function (prefix, d) {
