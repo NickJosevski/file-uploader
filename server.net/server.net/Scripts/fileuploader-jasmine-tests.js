@@ -460,10 +460,12 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
 
     it("should succesfully create a new isntance of qq.UploadButton including mapping an existing element", function () {
         var button,
+            buttonAsJqObject = $(".qq-upload-button");
             buttonDiv = $(".qq-upload-button").get(0);
 
         button = new qq.UploadButton({
             element: buttonDiv,
+            jqButton: buttonAsJqObject,
             multiple: true,
             onChange: function (input) { console.log(input); }
         });
@@ -486,6 +488,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         var root = $('#file-uploader'),
             buttonClass,
             buttonDiv = $(".qq-upload-button").get(0),
+            jqButton = $(".qq-upload-button"),
             fileInput;
 
         root.find(':input').remove();
@@ -493,6 +496,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         buttonClass = new qq.UploadButton({
             element: buttonDiv,
             jqElementId: 'file-uploader',
+            jqButton: jqButton,
             multiple: true,
             onChange: function (input) { console.log(input); }
         });
@@ -513,6 +517,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         var root = $('#file-uploader'),
             buttonClass,
             buttonDiv = $(".qq-upload-button").get(0),
+            jqButton = $(".qq-upload-button"),
             fileInput,
             changeFunc = function (input) { console.log(input); };
 
@@ -520,6 +525,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
 
         buttonClass = new qq.UploadButton({
             element: buttonDiv,
+            jqButton: jqButton,
             multiple: true,
             onChange: changeFunc
         });
