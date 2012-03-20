@@ -259,6 +259,7 @@ qq.FileUploaderBasic = function (o) {
         action: '/server/upload',
         params: {},
         button: null,
+        jqButton: null,
         multiple: true,
         maxConnections: 3,
         // validation        
@@ -296,7 +297,7 @@ qq.FileUploaderBasic.prototype = {
     repeatableSetupForButton: function () {
         this._handler = this._createUploadHandler();
         if (this._options.button) {
-            this._button = this._createUploadButton(this._options.button);
+            this._button = this._createUploadButton(this._options.button, this._options.jqButton);
         }
         this._preventLeaveInProgress();
     },
@@ -309,12 +310,12 @@ qq.FileUploaderBasic.prototype = {
     _log: function (str) {
         if (this._options.debug && window.console) console.log('[uploader] ' + str);
     },
-    _createUploadButton: function (element) {
+    _createUploadButton: function (element, jqButton) {
         var self = this;
-
         return new qq.UploadButton({
             element: element,
             jqElementId: this._options.jqElementId,
+            jqButton: jqButton,
             multiple: this._options.multiple && qq.UploadHandlerXhr.isSupported(),
             onChange: function (input) {
                 self._onInputChange(input);
@@ -569,7 +570,7 @@ qq.extend(qq.FileUploader.prototype, {
         this._jqElement = $('#' + this._options.jqElementId);
         this._jqExternalElement = $('#' + this._options.jqExternalElementId);
         this._jqElement.html(this._options.template);
-        this._button = this._createUploadButton(this._find(this._element, 'button'));
+        this._button = this._createUploadButton(this._find(this._element, 'button'), $('.' + this._options.classes.button));
         this._jqListElement = $('#' + this._options.classes.list);
         this._jqListExternalElement = this._jqExternalElement.find("ul");
 
@@ -587,10 +588,6 @@ qq.extend(qq.FileUploader.prototype, {
         }
 
         return element;
-    },
-    _moveToExternalList: function (id) {
-        var elem = this._jqElement.find("[data-id='" + id + "']");
-        this._jqListExternalElement.append(elem);
     },
     _setupDragDrop: function () {
         var self = this,
@@ -892,9 +889,7 @@ qq.UploadButton.prototype = {
             opacity: 0
         });
 
-        
-        var root = $('#' + this._options.jqElementId);
-        root.append(input);
+        this._options.jqButton.append(input);
 
         var self = this;
         input.on('change', function () {
