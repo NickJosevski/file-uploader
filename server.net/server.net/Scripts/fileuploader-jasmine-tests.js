@@ -1162,38 +1162,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
         children = qq.children(result);
         expect(children.length).toEqual(5/*4 spans and a link for in progress*/);
     });
-
-    it("should be able relocate an item to a new list when _moveToExtenralList is called.", function () {
-        var id = 1900,
-            result,
-            name = 'i.should.move';
-
-        uploader._addToList(id, name);
-        externalList = ongoingUploads.find('ul');
-
-        uploader._moveToExternalList(id, externalList);
-
-        result = $('#on-going-uploads').find("[data-id='" + id + "']");
-
-        expect(result.get(0)).toBeDefined();
-        expect(result.find('.qq-upload-file').html()).toEqual(name);
-    });
-
-    it("should be able relocate an item to a new list when _moveToExtenralList is called.", function () {
-        var id = 1900,
-            result,
-            name = 'i.should.move';
-
-        uploader._addToList(id, name);
-
-        uploader._moveToExternalList(id);
-
-        result = $('#on-going-uploads').find("[data-id='" + id + "']");
-
-        expect(result.get(0)).toBeDefined();
-        expect(result.find('.qq-upload-file').html()).toEqual(name);
-    });
-
+    
     it("should extract only in progress items when FileUploader.extractOutInProgress is called.", function () {
         var id = 1900,
             result,
