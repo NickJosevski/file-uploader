@@ -12,7 +12,7 @@ var dd = dd || {};
 var isChromeOrFirefox = (/chrome/.test(navigator.userAgent.toLowerCase()) || $.browser.mozilla);
 
 describe("A core set of unit tests on the Valum file-uploader library, setting as a basepoint how it is expected to operate", function () {
-    //return;
+    
     var uploader,
         templateFromFileUploader,
         ongoingUploads,
@@ -103,7 +103,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         result = uploader._validateFile(pretendFile);
         expect(result).toBeTruthy();
     });
-
+    
     it("should report size is zero when FileUploaderBasic._validateFile is called", function () {
 
         var pretendFile = {}, result;
@@ -166,18 +166,19 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
     $("#temp-elements").empty();
 
     uploader._setupDragDrop();
-        
+
     var dialog = $("#dialog");
     var uploadArea = dialog.find(":qq-uploader");
 
     expect(dialog.length).toEqual(1);
     expect(uploadArea.length).toEqual(1);
     });*/
-
+    
     it("should have _preventLeaveInProgress and therefore an attached event when calling _onSubmit", function () {
 
         var event;
         uploader._onSubmit(1, 'file1.name');
+        uploader._filesInProgress--;
 
         event = ('onbeforeunload' in window) || ('beforeunload' in window);
 
@@ -188,6 +189,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         uploader._onSubmit(1, 'file1.name');
 
         expect(uploader._filesInProgress).toEqual(1);
+        uploader._filesInProgress--;
     });
 
     it("should increment the files twice in progress variable via 2 calls to _onSubmit", function () {
@@ -195,6 +197,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         uploader._onSubmit(2, 'file2.name');
 
         expect(uploader._filesInProgress).toEqual(2);
+        uploader._filesInProgress -= 2;
     });
 
     it("should create 4 spans, including a spinner when _addToList is called", function () {
@@ -212,12 +215,12 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         expect(spinner.length).toEqual(1);
     });
 
-
     it("should have 3 remaining spans, with the sucess one visible when _onComplete is called with a success result", function () {
 
         var list, children, childSpans, success, size, failed;
         uploader._addToList(1, 'file.name');
         uploader._onComplete(1, 'file.name', { success: true });
+        uploader._filesInProgress++;
 
         list = $('#file-uploader').find(".qq-upload-list");
         children = list.children();
@@ -238,6 +241,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         var list, failed;
         uploader._addToList(1, 'file.name');
         uploader._onComplete(1, 'file.name', { success: false });
+        uploader._filesInProgress++;
 
         list = $('#file-uploader').find(".qq-upload-list");
         failed = list.find(".qq-upload-fail");
@@ -382,6 +386,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
 
         uploader._addToList(1, 'file1.name');
         uploader._onComplete(1, 'file.name', { success: true });
+        uploader._filesInProgress++;
 
         getSpinner = function () { uploader._find(root, 'spinner'); };
         getCancel = function () { uploader._find(root, 'cancel'); };
@@ -800,7 +805,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
         response = uhf._getIframeContentJSON(iframe);
         expect(response).toEqual({ success: true });
     });
-
+    
     it("should test UploadHandlerForm._createForm is called", function () {
 
         var uhf = new qq.UploadHandlerForm({ action: '/upload/UploadFile' }),
@@ -1086,7 +1091,7 @@ describe("A core set of unit tests on the Valum file-uploader library, setting a
 });
 
 describe("modifictions (expansion) to the fileuploader lib", function () {
-    //return;
+    
     var uploader,
         ongoingUploads,
         externalList,
@@ -1133,6 +1138,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
 
         uploader._addToList(id, 'file.name');
         uploader._onComplete(id, 'file.name', { success: true });
+        uploader._filesInProgress++;
 
         list = $('#file-uploader').find("[data-id='" + id + "']");
 
@@ -1147,12 +1153,13 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
 
         uploader._addToList(id, 'file.name');
         uploader._onComplete(id, 'file.name', { success: false });
+        uploader._filesInProgress++;
 
         list = $('#file-uploader').find("[data-id='" + id + "']");
 
         expect(list.data('status')).toEqual(expected);
     });
-
+    
     it("should be able return an item either from standard location, or toast area when _getItemByFileId is called.", function () {
         var id = 1888,
             result,
@@ -1168,7 +1175,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
         children = qq.children(result);
         expect(children.length).toEqual(5/*4 spans and a link for in progress*/);
     });
-    
+
     it("should extract only in progress items when FileUploader.extractOutInProgress is called.", function () {
         var id = 1900,
             result,
@@ -1182,35 +1189,6 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
 
         expect(result.get(0)).toBeDefined();
         expect(result.find('.qq-upload-file').html()).toEqual(name);
-    });
-
-    beforeEach(function () {
-
-        $("body").append(
-            $('<div id="temp-elements">')
-                .append(
-                    $('<div id="dialog" title="Basic dialog">')
-                    .append($('<div id="file-uploader"></div>'))
-                )
-        );
-
-        ongoingUploads = $('<div id="on-going-uploads">-On Going-</div>').append('<ul>');
-        $("body").append(ongoingUploads);
-
-        templateFromFileUploader =
-            '<div class="qq-uploader">' +
-            '<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>' +
-            '<div class="qq-upload-button">Upload a file</div>' +
-            '<ul id="qq-upload-list" class="qq-upload-list"></ul>' +
-            '</div>';
-
-        uploader = new qq.FileUploader({
-            element: $('#file-uploader')[0],
-            jqElementId: 'file-uploader',
-            jqExternalElementId: 'on-going-uploads',
-            action: '/upload/UploadFile',
-            debug: true
-        });
     });
 
     it("should not overwrite progress on items removed from the list (simulated move away)", function () {
@@ -1282,6 +1260,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
         result.success = true;
         $.each(g1ids.concat(g2ids), function (indx, val) {
             uploader._onComplete(val, 'file.' + val, result);
+            uploader._filesInProgress++;
         });
 
         $('#on-going-uploads').find('li').each(function (i, v) {
@@ -1343,6 +1322,35 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
         });
     });
 
+    beforeEach(function () {
+
+        $("body").append(
+            $('<div id="temp-elements">')
+                .append(
+                    $('<div id="dialog" title="Basic dialog">')
+                    .append($('<div id="file-uploader"></div>'))
+                )
+        );
+
+        ongoingUploads = $('<div id="on-going-uploads">-On Going-</div>').append('<ul>');
+        $("body").append(ongoingUploads);
+
+        templateFromFileUploader =
+            '<div class="qq-uploader">' +
+            '<div class="qq-upload-drop-area"><span>Drop files here to upload</span></div>' +
+            '<div class="qq-upload-button">Upload a file</div>' +
+            '<ul id="qq-upload-list" class="qq-upload-list"></ul>' +
+            '</div>';
+
+        uploader = new qq.FileUploader({
+            element: $('#file-uploader')[0],
+            jqElementId: 'file-uploader',
+            jqExternalElementId: 'on-going-uploads',
+            action: '/upload/UploadFile',
+            debug: true
+        });
+    });
+    
     afterEach(function () {
         $("#temp-elements").empty();
         $("#on-going-uploads").remove();
@@ -1378,7 +1386,7 @@ describe("modifictions (expansion) to the fileuploader lib", function () {
 
 describe("file-upload-in-progress-has-no-after-each-cleanup-task", function () {
 
-    //return; //no new tests in progress
+    return; //no new tests in progress
 
     var uploader,
         ongoingUploads,
